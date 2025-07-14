@@ -10,8 +10,8 @@ import useWebSocket from 'react-use-websocket';
 
 
 // const WS_URL = 'ws://localhost:8000/ws/kimp'; // FastAPI WS 엔드포인트
-const WS_URL = "wss://kimp-backend.onrender.com/ws/kimp"; // FastAPI WS 엔드포인트
-// const WS_URL = 'ws://localhost:8000/ws/kimp'; // FastAPI WS 엔드포인트
+// const WS_URL = "wss://kimp-backend.onrender.com/ws/kimp"; // FastAPI WS 엔드포인트
+const WS_URL = "ws://144.24.75.165:8000/ws/kimp"; // FastAPI WS 엔드포인트
 
 
 export default function HomePage() {
