@@ -4,9 +4,13 @@ import { useEffect, useState } from 'react';
 import useWebSocket from 'react-use-websocket';
 
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://https://kimp-backend.onrender.com/ws/kimp';
+// const WS_URL =
+//   process.env.NEXT_PUBLIC_WS_URL ||
+//   'ws://144.24.75.165:8000/ws/kimp'; // 여기에 Oracle 서버의 공인 IP와 백엔드 포트 8000을 사용
 
-// const WS_URL = "wss://https://kimp-backend.onrender.com/ws/kimp"; // FastAPI WS 엔드포인트
+
+// const WS_URL = 'ws://localhost:8000/ws/kimp'; // FastAPI WS 엔드포인트
+const WS_URL = "wss://https://kimp-backend.onrender.com/ws/kimp"; // FastAPI WS 엔드포인트
 // const WS_URL = 'ws://localhost:8000/ws/kimp'; // FastAPI WS 엔드포인트
 
 
@@ -52,8 +56,8 @@ export default function HomePage() {
     >
       {/* 환율 표시 */}
       <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', textAlign: 'left' }}>
-        현재 환율: {exchangeRate ? `${exchangeRate.toFixed(2)} KRW/USD` : '불러오는 중...'}
-      (갱신주기1분30초)</h2>
+        테더환율: {exchangeRate ? `${exchangeRate.toFixed(2)} KRW/USDT` : '불러오는 중...'}
+      </h2>
 
       {/* 페이지 제목 */}
       <h1 style={{ fontSize: '2.2rem', marginBottom: '1rem', textAlign: 'center' }}>
@@ -109,9 +113,9 @@ export default function HomePage() {
                     style={{
                       ...tdStyle,
                       color:
-                        row.kimp_percent > 0
+                        row.kimp_percent < 0
                           ? '#FF4760'
-                          : row.kimp_percent < 0
+                          : row.kimp_percent > 0
                           ? '#42f579'
                           : '#fff',
                     }}
