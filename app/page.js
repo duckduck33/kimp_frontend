@@ -8,16 +8,16 @@ const WS_URL = "wss://kimp-backend.onrender.com/ws/kimp";
 
 // 코인별 트레이딩뷰 심볼 (원하면 BYBIT 등도 추가)
 const symbolMap = {
-  BTC: 'UPBIT:BTC_KRW',
-  ETH: 'UPBIT:ETH_KRW',
-  XRP: 'UPBIT:XRP_KRW',
-  BCH: 'UPBIT:BCH_KRW',
-  SOL: 'UPBIT:SOL_KRW',
-  DOGE: 'UPBIT:DOGE_KRW',
-  AAVE: 'UPBIT:AAVE_KRW',
-  ADA: 'UPBIT:ADA_KRW',
-  // 필요시 바이비트: 'BYBIT:BTCUSDT' 등 추가 가능
+  BTC: 'BYBIT:BTCUSDT',
+  ETH: 'BYBIT:ETHUSDT',
+  XRP: 'BYBIT:XRPUSDT',
+  BCH: 'BYBIT:BCHUSDT',
+  SOL: 'BYBIT:SOLUSDT',
+  DOGE: 'BYBIT:DOGEUSDT',
+  AAVE: 'BYBIT:AAVEUSDT',
+  ADA: 'BYBIT:ADAUSDT',
 };
+
 
 // 트레이딩뷰 차트 위젯 컴포넌트
 function TradingViewChart({ symbol }) {
@@ -103,10 +103,6 @@ export default function HomePage() {
         fontFamily: 'Pretendard, sans-serif',
       }}
     >
-      {/* 상단 트레이딩뷰 차트 */}
-      <section style={{ margin: '0 auto 2rem auto', maxWidth: 900 }}>
-        <TradingViewChart symbol={symbolMap[selectedCoin]} />
-      </section>
 
       {/* 환율 표시 */}
       <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', textAlign: 'left' }}>
@@ -190,6 +186,13 @@ export default function HomePage() {
           </tbody>
         </table>
       </div>
+
+      {/* 상단 트레이딩뷰 차트 */}
+      <section style={{ margin: '0 auto 2rem auto', maxWidth: 900 }}>
+        <TradingViewChart symbol={symbolMap[selectedCoin]} />
+      </section>
+
+
 
       {/* WebSocket 연결 상태 */}
       <div style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#888' }}>
