@@ -25,13 +25,14 @@ function TradingViewChart({ symbol }) {
 
   useEffect(() => {
     if (!symbol) return;
-    // 기존 차트 위젯 제거
     ref.current.innerHTML = '';
     const script = document.createElement('script');
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
     script.async = true;
     script.innerHTML = JSON.stringify({
-      autosize: true,
+      autosize: false,
+      height: 420,
+      width: "100%",
       symbol: symbol,
       interval: "15",
       timezone: "Asia/Seoul",
@@ -55,9 +56,9 @@ function TradingViewChart({ symbol }) {
       ref={ref}
       style={{
         width: '100%',
-        minHeight: 600,         // ★ 높이 크게! (400~700 추천)
-        maxWidth: 1000,         // (선택) 차트 최대 폭
-        margin: '50px auto 0 auto',
+        height: 420, // 이 한 줄이면 충분!
+        maxWidth: 1000,
+        margin: '40px auto 0 auto',
         background: '#181f2b',
         borderRadius: 12,
         boxShadow: '0 2px 16px rgba(0,0,0,0.2)'
