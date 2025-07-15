@@ -55,8 +55,9 @@ function TradingViewChart({ symbol }) {
       ref={ref}
       style={{
         width: '100%',
-        minHeight: 420,
-        marginBottom: 32,
+        minHeight: 600,         // ★ 높이 크게! (400~700 추천)
+        maxWidth: 1000,         // (선택) 차트 최대 폭
+        margin: '50px auto 0 auto',
         background: '#181f2b',
         borderRadius: 12,
         boxShadow: '0 2px 16px rgba(0,0,0,0.2)'
@@ -113,6 +114,14 @@ export default function HomePage() {
       <h1 style={{ fontSize: '2.2rem', marginBottom: '1rem', textAlign: 'center' }}>
         실시간 김프(업비트 ↔ 바이비트)
       </h1>
+
+      {/* 상단 트레이딩뷰 차트 */}
+      <section style={{ margin: '0 auto 2rem auto', maxWidth: 900 }}>
+        <TradingViewChart symbol={symbolMap[selectedCoin]} />
+      </section>
+
+
+
 
       {/* 테이블 래퍼 */}
       <div style={{ overflowX: 'auto' }}>
@@ -186,12 +195,6 @@ export default function HomePage() {
           </tbody>
         </table>
       </div>
-
-      {/* 상단 트레이딩뷰 차트 */}
-      <section style={{ margin: '0 auto 2rem auto', maxWidth: 900 }}>
-        <TradingViewChart symbol={symbolMap[selectedCoin]} />
-      </section>
-
 
 
       {/* WebSocket 연결 상태 */}
