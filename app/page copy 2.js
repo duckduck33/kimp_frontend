@@ -4,15 +4,21 @@ import { useEffect, useState } from 'react';
 import useWebSocket from 'react-use-websocket';
 
 
-// const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://https://kimp-backend.onrender.com/ws/kimp';
+// const WS_URL =
+//   process.env.NEXT_PUBLIC_WS_URL ||
+//   'ws://144.24.75.165:8000/ws/kimp'; // 여기에 Oracle 서버의 공인 IP와 백엔드 포트 8000을 사용
 
-// const WS_URL = "wss://https://kimp-backend.onrender.com/ws/kimp"; // FastAPI WS 엔드포인트
-const WS_URL = 'ws://localhost:8000/ws/kimp'; // FastAPI WS 엔드포인트
+
+// const WS_URL = 'ws://localhost:8000/ws/kimp'; // FastAPI WS 엔드포인트
+const WS_URL = "wss://kimp-backend.onrender.com/ws/kimp"; // FastAPI WS 엔드포인트
+// const WS_URL = "ws://144.24.75.165:8000/ws/kimp"; // FastAPI WS 엔드포인트
 
 
 export default function HomePage() {
   // 서버로부터 받은 시세/김프 데이터를 저장하는 상태
   const [coins, setCoins] = useState([]);
+  // 환율을 저장하는 상태
+  const [exchangeRate, setExchangeRate] = useState(null);
 
   // WebSocket 훅: 자동 재연결 설정
   const { lastMessage, readyState } = useWebSocket(WS_URL, {
@@ -26,7 +32,12 @@ export default function HomePage() {
     if (lastMessage?.data) {
       try {
         const data = JSON.parse(lastMessage.data);
-        setCoins(data);
+        if (data.exchange_rate && data.coin_data) {
+          setExchangeRate(data.exchange_rate);
+          setCoins(data.coin_data);
+        } else {
+          console.error('수신된 데이터 형식이 예상과 다릅니다:', data);
+        }
       } catch (e) {
         console.error('데이터 파싱 오류:', e);
       }
@@ -43,8 +54,13 @@ export default function HomePage() {
         fontFamily: 'Pretendard, sans-serif',
       }}
     >
+      {/* 환율 표시 */}
+      <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', textAlign: 'left' }}>
+        테더환율: {exchangeRate ? `${exchangeRate.toFixed(2)} KRW/USDT` : '불러오는 중...'}
+      </h2>
+
       {/* 페이지 제목 */}
-      <h1 style={{ fontSize: '2.2rem', marginBottom: '1rem' }}>
+      <h1 style={{ fontSize: '2.2rem', marginBottom: '1rem', textAlign: 'center' }}>
         실시간 김프(업비트 ↔ 바이비트)
       </h1>
 
@@ -97,9 +113,9 @@ export default function HomePage() {
                     style={{
                       ...tdStyle,
                       color:
-                        row.kimp_percent > 0
+                        row.kimp_percent < 0
                           ? '#FF4760'
-                          : row.kimp_percent < 0
+                          : row.kimp_percent > 0
                           ? '#42f579'
                           : '#fff',
                     }}
