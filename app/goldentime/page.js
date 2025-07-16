@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import NavBar from '../../components/NavBar';
 import Chart from 'chart.js/auto';
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbyfJwHFd7dLbNFi4wbvsuRg5Zv4tLht2xRdqYQp_-IGFLei0j2utFz3fkey5gCnx8o3/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyaVPOXDuSik2-zujcOG7bIT4vcz2xSn1tAYal5mv6yoyAhx7wFu4ik6gXpnRq7w1_0/exec';
 const periods = [
   { label: '6개월', value: '6m' },
   { label: '3개월', value: '3m' },
