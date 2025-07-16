@@ -7,13 +7,13 @@ export default function NavBar() {
   return (
     <nav style={{
       display: 'flex',
-      gap: '24px',
+      gap: '32px',
       justifyContent: 'center',
       alignItems: 'center',
       padding: '18px 0',
       background: '#181f2b',
-      fontSize: '1.15rem',
-      fontWeight: 600
+      fontSize: '1.45rem',
+      fontWeight: 700
     }}>
       <Link href="/" style={{
         color: pathname === '/' ? '#FFD700' : '#fff',
