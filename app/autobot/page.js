@@ -42,11 +42,12 @@ export default function HomePage() {
         >
           바이비트 자동매매 보러가기
         </a>
-        </div>
         <div className="desc-text">
           자동매매플랫폼은 현재 바이비트 거래소와 연동되었고,  
           향후 빙엑스, 오케이엑스 거래소도 연동할 계획입니다.
         </div>
+        </div>
+
     </>
   );
 }
