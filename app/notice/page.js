@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useRef } from 'react';
 import useWebSocket from 'react-use-websocket';
-import NavBar from '../components/NavBar';
+import NavBar from '../../components/NavBar';
+
 
 
 // WebSocket 주소
