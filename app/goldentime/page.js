@@ -17,18 +17,19 @@ const ACCENT = '#FFD700';
 const TEXT = '#fff';
 
 export default function GoldentimePage() {
+  const [allVolumeRankCoins, setAllVolumeRankCoins] = useState([]);
+  const [recentCoins, setRecentCoins] = useState([]);
   const [coins, setCoins] = useState([]);
   const [selectedCoin, setSelectedCoin] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState(periods[0].value);
 
-  // API에서 받아올 변동률 데이터 상태 (시간별, 요일별)
   const [hourlyVolatility, setHourlyVolatility] = useState([]);
   const [dailyVolatility, setDailyVolatility] = useState([]);
 
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
 
-  // 1) 초기 코인 리스트 불러오기 (init)
+  // 1) init API 호출, 거래대금순위 + 상장1년미만 코인 리스트 동시 로딩
   useEffect(() => {
     fetch(`${API_URL}?type=init`)
       .then(res => res.json())
@@ -37,20 +38,25 @@ export default function GoldentimePage() {
           console.error(data.error);
           return;
         }
-        if (data.volumeRankList && data.volumeRankList.length > 0) {
-          setCoins(data.volumeRankList);
-          setSelectedCoin(data.volumeRankList[0]);
-        }
+        const volumeRankList = data.volumeRankList || [];
+        const recentList = data.recentList || [];
+
+        setAllVolumeRankCoins(volumeRankList);
+        setRecentCoins(recentList);
+
+        // 상장1년미만 제외한 리스트 생성
+        const filtered = volumeRankList.filter(coin => !recentList.includes(coin));
+        setCoins(filtered);
+
+        // 초기 선택 코인 세팅 (첫 번째)
+        if (filtered.length > 0) setSelectedCoin(filtered[0]);
       })
       .catch(console.error);
   }, []);
 
-  // 2) 선택된 코인과 기간 바뀔 때마다 변동성 데이터 API 요청 (아래 API 주소와 파라미터를 실제 맞게 수정 필요)
+  // 2) 코인, 기간 변경 시 변동성 API 호출
   useEffect(() => {
     if (!selectedCoin || !selectedPeriod) return;
-
-    // 예: 변동성 데이터를 주는 API 주소는 /volatility?coin=BTC&period=6m 이런 식이라고 가정
-    // 실제 API 주소와 파라미터명에 맞게 수정 필요
 
     fetch(`${API_URL}?type=volatility&coin=${encodeURIComponent(selectedCoin)}&period=${selectedPeriod}`)
       .then(res => res.json())
@@ -61,13 +67,6 @@ export default function GoldentimePage() {
           setDailyVolatility([]);
           return;
         }
-
-        // 서버에서 받아오는 데이터 형식 예시:
-        // {
-        //   hourly: [1.6, 1.4, ..., 1.9], 24개 숫자 배열 (시간대별 변동률 %)
-        //   daily: [0.86, 1.57, ..., 1.00] 7개 숫자 배열 (요일별 변동률 %)
-        // }
-
         setHourlyVolatility(data.hourly || []);
         setDailyVolatility(data.daily || []);
       })
@@ -78,14 +77,12 @@ export default function GoldentimePage() {
       });
   }, [selectedCoin, selectedPeriod]);
 
-  // 3) Chart.js 레이더 차트 그리기 및 업데이트
+  // 3) Chart.js 레이더 차트 그리기 및 갱신
   useEffect(() => {
     if (!chartRef.current) return;
     if (!hourlyVolatility || hourlyVolatility.length !== 24) return;
 
-    if (chartInstanceRef.current) {
-      chartInstanceRef.current.destroy();
-    }
+    if (chartInstanceRef.current) chartInstanceRef.current.destroy();
 
     const ctx = chartRef.current.getContext('2d');
     chartInstanceRef.current = new Chart(ctx, {
@@ -96,7 +93,7 @@ export default function GoldentimePage() {
           label: '시간대별 변동률 (%)',
           data: hourlyVolatility,
           fill: true,
-          backgroundColor: 'rgba(255, 213, 79, 0.4)', // 연한 노란색
+          backgroundColor: 'rgba(255, 213, 79, 0.4)',
           borderColor: ACCENT,
           pointBackgroundColor: ACCENT,
           pointRadius: 5,
@@ -128,9 +125,7 @@ export default function GoldentimePage() {
     });
 
     return () => {
-      if (chartInstanceRef.current) {
-        chartInstanceRef.current.destroy();
-      }
+      if (chartInstanceRef.current) chartInstanceRef.current.destroy();
     };
   }, [hourlyVolatility]);
 
@@ -140,52 +135,59 @@ export default function GoldentimePage() {
     <main style={{ background: BG, minHeight: '100vh', padding: 20, fontFamily: 'Pretendard,sans-serif', color: TEXT }}>
       <NavBar />
 
-      {/* 코인 선택 버튼 */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-        {coins.map(c => (
-          <button
-            key={c}
-            onClick={() => setSelectedCoin(c)}
-            style={{
-              padding: '6px 16px',
-              borderRadius: 20,
-              border: '1.5px solid',
-              borderColor: selectedCoin === c ? ACCENT : '#555',
-              background: selectedCoin === c ? ACCENT : 'transparent',
-              color: selectedCoin === c ? '#000' : '#ccc',
-              fontWeight: selectedCoin === c ? '700' : '400',
-              cursor: 'pointer'
-            }}
-          >
-            {c}
-          </button>
-        ))}
-      </div>
+      {/* 상단: 필터 버튼 */}
+      <section style={{ marginBottom: 30 }}>
+        <div style={{ marginBottom: 14, fontWeight: '700', fontSize: 18 }}>
+          거래대금 상위 10개 중 상장 1년 미만 코인 제외
+        </div>
 
-      {/* 기간 선택 버튼 */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 40, flexWrap: 'wrap' }}>
-        {periods.map(p => (
-          <button
-            key={p.value}
-            onClick={() => setSelectedPeriod(p.value)}
-            style={{
-              padding: '6px 20px',
-              borderRadius: 10,
-              border: '1.5px solid',
-              borderColor: selectedPeriod === p.value ? ACCENT : '#555',
-              background: selectedPeriod === p.value ? ACCENT : 'transparent',
-              color: selectedPeriod === p.value ? '#000' : '#ccc',
-              fontWeight: selectedPeriod === p.value ? '700' : '400',
-              cursor: 'pointer'
-            }}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
+        {/* 코인 선택 버튼 */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
+          {coins.length > 0 ? coins.map(coin => (
+            <button
+              key={coin}
+              onClick={() => setSelectedCoin(coin)}
+              style={{
+                padding: '6px 18px',
+                borderRadius: 20,
+                border: '1.5px solid',
+                borderColor: selectedCoin === coin ? ACCENT : '#555',
+                backgroundColor: selectedCoin === coin ? ACCENT : 'transparent',
+                color: selectedCoin === coin ? '#000' : '#ccc',
+                fontWeight: selectedCoin === coin ? '700' : '400',
+                cursor: 'pointer'
+              }}
+            >
+              {coin}
+            </button>
+          )) : <p>코인 리스트를 불러오는 중입니다...</p>}
+        </div>
+
+        {/* 기간 선택 버튼 */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {periods.map(p => (
+            <button
+              key={p.value}
+              onClick={() => setSelectedPeriod(p.value)}
+              style={{
+                padding: '6px 20px',
+                borderRadius: 10,
+                border: '1.5px solid',
+                borderColor: selectedPeriod === p.value ? ACCENT : '#555',
+                backgroundColor: selectedPeriod === p.value ? ACCENT : 'transparent',
+                color: selectedPeriod === p.value ? '#000' : '#ccc',
+                fontWeight: selectedPeriod === p.value ? '700' : '400',
+                cursor: 'pointer'
+              }}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </section>
 
       {/* 시간대별 변동률 레이더 차트 */}
-      <div style={{
+      <section style={{
         width: 420,
         height: 420,
         backgroundColor: CARD_BG,
@@ -199,10 +201,10 @@ export default function GoldentimePage() {
           시간대별 변동률
         </h3>
         <canvas ref={chartRef} style={{ width: '100%', height: '360px' }} />
-      </div>
+      </section>
 
       {/* 요일별 변동률 박스 스타일 */}
-      <div style={{
+      <section style={{
         backgroundColor: CARD_BG,
         borderRadius: 20,
         padding: 20,
@@ -225,19 +227,18 @@ export default function GoldentimePage() {
               fontWeight: idx === 1 ? '700' : '400',
               color: idx === 1 ? '#000' : '#ccc',
               marginLeft: idx === 0 ? 0 : 6,
-              marginRight: idx === dailyVolatility.length -1 ? 0 : 6,
+              marginRight: idx === dailyVolatility.length - 1 ? 0 : 6,
               userSelect: 'text',
               cursor: 'default',
               fontSize: 18,
-              lineHeight: 1.1,
-              userSelect: 'text'
+              lineHeight: 1.1
             }}
           >
-            <div>{dayLabels[idx]}</div>
+            <div>{['일', '월', '화', '수', '목', '금', '토'][idx]}</div>
             <div style={{ marginTop: 6 }}>{val.toFixed(2)}%</div>
           </div>
         )) : <p style={{ color: '#999' }}>요일별 변동률 데이터를 불러오는 중입니다...</p>}
-      </div>
+      </section>
     </main>
   );
 }
