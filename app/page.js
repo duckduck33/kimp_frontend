@@ -204,26 +204,7 @@ export default function HomePage() {
           <p>WS_URL: {WS_URL}</p>
         </div>
 
-        {/* 문의 버튼 */}
-        <a
-          href="http://pf.kakao.com/_xlLxcfxj/chat"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-            backgroundColor: '#FFEB00',
-            color: '#000',
-            padding: '12px 16px',
-            borderRadius: '4px',
-            fontWeight: 'bold',
-            textDecoration: 'none',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
-          }}
-        >
-          잠코딩개발문의
-        </a>
+
       </main>
     </>
   );
