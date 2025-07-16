@@ -59,6 +59,15 @@ export default function NavBar() {
           >
             TOP10지표
           </Link>
+          <Link
+            href="/autobot"
+            style={{
+              color: pathname === "/autobot" ? "#FFD700" : "#fff",
+              textDecoration: pathname === "/autobot" ? "underline" : "none",
+            }}
+          >
+            자동매매
+          </Link>
         </div>
 
         {/* 오른쪽 상단 버튼 그룹 */}
