@@ -3,30 +3,49 @@ import React, { useState, useEffect, useRef } from 'react';
 import NavBar from '../../components/NavBar';
 import Chart from 'chart.js/auto';
 
-const coins = ['XRP', 'BTC', 'ETH', 'XLM', 'STRIKE'];
+const API_URL = 'https://script.google.com/macros/s/AKfycbyfJwHFd7dLbNFi4wbvsuRg5Zv4tLht2xRdqYQp_-IGFLei0j2utFz3fkey5gCnx8o3/exec';
 const periods = [
   { label: '6개월', value: '6m' },
   { label: '3개월', value: '3m' },
   { label: '1개월', value: '1m' }
 ];
+const BG = '#101728';
+const CARD_BG = '#181f2b';
+const ACCENT = '#FFD700';
+const TEXT = '#fff';
 
 export default function GoldentimePage() {
-  const [selectedCoin, setSelectedCoin] = useState('XRP');
+  const [coins, setCoins] = useState([]);
+  const [selectedCoin, setSelectedCoin] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('6m');
   const [hourly, setHourly] = useState([]);
   const [weekly, setWeekly] = useState([]);
   const chartRef = useRef();
 
-  // 데이터 패칭 (예시용 더미, 실제론 API 사용)
+  // 1. 코인 리스트 불러오기
   useEffect(() => {
-    // TODO: API 호출로 대체
-    setHourly([1.5, 1.3, 1.1, 0.9, 0.7, 0.6, 0.8, 1.0, 1.1, 1.2, 1.4, 1.5, 1.4, 1.3, 1.1, 0.9, 0.7, 0.6, 0.8, 1.0, 1.1, 1.2, 1.4, 1.5]);
-    setWeekly([0.86, 1.58, 1.46, 1.16, 1.12, 1.18, 1.00]);
+    fetch(`${API_URL}?type=golden_coins`)
+      .then(res => res.json())
+      .then(data => {
+        setCoins(data);
+        setSelectedCoin(data[0] || '');
+      });
+  }, []);
+
+  // 2. 코인/기간 선택시 변동성 데이터 fetch
+  useEffect(() => {
+    if (!selectedCoin) return;
+    fetch(`${API_URL}?type=golden&coin=${encodeURIComponent(selectedCoin)}&period=${selectedPeriod}`)
+      .then(res => res.json())
+      .then(data => {
+        setHourly(Array.isArray(data.hourly) ? data.hourly : []);
+        setWeekly(Array.isArray(data.weekly) ? data.weekly : []);
+      });
   }, [selectedCoin, selectedPeriod]);
 
-  // 레이더 차트 렌더
+  // 3. Chart.js Radar 렌더
   useEffect(() => {
-    if (!chartRef.current) return;
+    if (!chartRef.current || hourly.length !== 24) return;
     chartRef.current.innerHTML = '';
     const canvas = document.createElement('canvas');
     chartRef.current.appendChild(canvas);
@@ -36,9 +55,9 @@ export default function GoldentimePage() {
         labels: Array.from({ length: 24 }, (_, i) => `${i}시`),
         datasets: [{
           data: hourly,
-          borderColor: '#FFD600',
+          borderColor: ACCENT,
           backgroundColor: 'rgba(255, 214, 0, 0.15)',
-          pointBackgroundColor: '#FFD600',
+          pointBackgroundColor: ACCENT,
         }]
       },
       options: {
@@ -46,9 +65,9 @@ export default function GoldentimePage() {
         plugins: { legend: { display: false } },
         scales: {
           r: {
-            angleLines: { color: '#EEE' },
-            pointLabels: { color: '#222', font: { size: 13, weight: 600 } },
-            ticks: { color: '#222', showLabelBackdrop: false, font: { size: 12 } }
+            angleLines: { color: '#303952' },
+            pointLabels: { color: TEXT, font: { size: 15, weight: 700 } },
+            ticks: { color: TEXT, showLabelBackdrop: false, font: { size: 13 } }
           }
         }
       }
@@ -56,69 +75,136 @@ export default function GoldentimePage() {
   }, [hourly]);
 
   return (
-    <main style={{ background: '#f5f6fa', minHeight: '100vh', padding: 24 }}>
+    <main style={{
+      background: BG,
+      minHeight: '100vh',
+      color: TEXT,
+      fontFamily: 'Pretendard,sans-serif',
+      padding: 0,
+    }}>
       <NavBar />
-      <div style={{ maxWidth: 370, margin: '30px auto', background: '#fff', borderRadius: 16, boxShadow: '0 2px 14px rgba(0,0,0,0.07)', padding: 24 }}>
+      {/* 우측상단 문의 버튼 */}
+      <a
+        href="http://pf.kakao.com/_xlLxcfxj/chat"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          backgroundColor: '#FFEB00',
+          color: '#000',
+          padding: '12px 16px',
+          borderRadius: '4px',
+          fontWeight: 'bold',
+          textDecoration: 'none',
+          boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+          zIndex: 9999
+        }}
+      >
+        잠코딩개발문의
+      </a>
+      {/* 차트 카드 */}
+      <div style={{
+        margin: '50px auto 0 auto',
+        background: CARD_BG,
+        borderRadius: 18,
+        boxShadow: '0 2px 18px rgba(0,0,0,0.20)',
+        padding: '38px 38px 32px 38px',
+        maxWidth: 700,
+        minWidth: 370,
+        minHeight: 640,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
+      }}>
         {/* 코인 버튼 */}
-        <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+        <div style={{ display: 'flex', gap: 14, marginBottom: 18, flexWrap: 'wrap' }}>
           {coins.map(c => (
             <button
               key={c}
               onClick={() => setSelectedCoin(c)}
               style={{
-                padding: '4px 18px',
+                padding: '7px 26px',
                 border: 'none',
-                borderRadius: 8,
-                background: selectedCoin === c ? '#222' : '#eee',
-                color: selectedCoin === c ? '#FFD600' : '#444',
-                fontWeight: 700,
-                fontSize: 17,
-                cursor: 'pointer'
+                borderRadius: 12,
+                background: selectedCoin === c ? ACCENT : '#232d3f',
+                color: selectedCoin === c ? '#000' : '#fff',
+                fontWeight: selectedCoin === c ? 900 : 600,
+                fontSize: 20,
+                cursor: 'pointer',
+                boxShadow: selectedCoin === c ? '0 1px 10px rgba(255,214,0,0.10)' : undefined
               }}
             >{c}</button>
           ))}
         </div>
         {/* 기간 버튼 */}
-        <div style={{ display: 'flex', gap: 10, marginBottom: 22 }}>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 32 }}>
           {periods.map(p => (
             <button
               key={p.value}
               onClick={() => setSelectedPeriod(p.value)}
               style={{
-                padding: '2px 16px',
+                padding: '6px 28px',
                 border: 'none',
-                borderRadius: 8,
-                background: selectedPeriod === p.value ? '#FFD600' : '#eee',
-                color: selectedPeriod === p.value ? '#222' : '#444',
-                fontWeight: 600,
-                fontSize: 15,
-                cursor: 'pointer'
+                borderRadius: 10,
+                background: selectedPeriod === p.value ? ACCENT : '#232d3f',
+                color: selectedPeriod === p.value ? '#000' : '#fff',
+                fontWeight: selectedPeriod === p.value ? 900 : 600,
+                fontSize: 17,
+                cursor: 'pointer',
+                boxShadow: selectedPeriod === p.value ? '0 1px 8px rgba(255,214,0,0.09)' : undefined
               }}
             >{p.label}</button>
           ))}
         </div>
         {/* 레이더 차트 */}
-        <div ref={chartRef} style={{ background: '#fff', borderRadius: 14, padding: 18, marginBottom: 22, minHeight: 320 }} />
+        <div ref={chartRef} style={{
+          background: CARD_BG,
+          borderRadius: 16,
+          padding: 22,
+          marginBottom: 36,
+          width: 540,
+          minHeight: 420,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }} />
         {/* 요일별 변동률 */}
-        <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 8px rgba(0,0,0,0.03)', padding: 12, marginTop: 5 }}>
-          <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 5, color: '#666', fontWeight: 600, fontSize: 15 }}>
-            {['일','월','화','수','목','금','토'].map(d => <span key={d} style={{ minWidth: 33, textAlign: 'center' }}>{d}</span>)}
+        <div style={{
+          background: CARD_BG,
+          borderRadius: 13,
+          boxShadow: '0 1px 8px rgba(0,0,0,0.10)',
+          padding: 16,
+          minWidth: 330,
+          marginTop: 5
+        }}>
+          <div style={{
+            display: 'flex',
+            gap: 12,
+            justifyContent: 'center',
+            marginBottom: 9,
+            color: '#ddd',
+            fontWeight: 600,
+            fontSize: 18
+          }}>
+            {['일','월','화','수','목','금','토'].map(d => <span key={d} style={{ minWidth: 36, textAlign: 'center' }}>{d}</span>)}
           </div>
-          <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
             {weekly.map((v, i) =>
               <span key={i}
                 style={{
-                  background: i === 1 ? '#FFF9C4' : '#eee',
-                  color: i === 1 ? '#DAA900' : '#333',
-                  fontWeight: i === 1 ? 800 : 600,
-                  borderRadius: 7,
-                  minWidth: 33,
+                  background: i === 1 ? ACCENT : '#232d3f',
+                  color: i === 1 ? '#181f2b' : '#fff',
+                  fontWeight: i === 1 ? 900 : 600,
+                  borderRadius: 9,
+                  minWidth: 36,
                   textAlign: 'center',
-                  padding: 4,
-                  fontSize: 16,
-                  border: i === 1 ? '2px solid #FFD600' : 'none'
+                  padding: 7,
+                  fontSize: 18,
+                  border: i === 1 ? '2px solid #ffe44e' : 'none'
                 }}>
-                {v.toFixed(2)}%
+                {typeof v === 'number' ? v.toFixed(2) : '-'}%
               </span>
             )}
           </div>
