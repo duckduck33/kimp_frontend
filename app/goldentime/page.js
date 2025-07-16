@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import NavBar from '../../components/NavBar';
 import Chart from 'chart.js/auto';
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbyaVPOXDuSik2-zujcOG7bIT4vcz2xSn1tAYal5mv6yoyAhx7wFu4ik6gXpnRq7w1_0/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycby60rsO3sCHiRPv6mqMUQa-u2T0nPGTEles189caRS5KfR8ktZMOlmsBpPo9dNw8CrsiA/exec';
 const periods = [
   { label: '6개월', value: '6m' },
   { label: '3개월', value: '3m' },
@@ -17,62 +17,82 @@ const TEXT = '#fff';
 export default function GoldentimePage() {
   const [coins, setCoins] = useState([]);
   const [selectedCoin, setSelectedCoin] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState('6m');
-  const [hourly, setHourly] = useState([]);
-  const [weekly, setWeekly] = useState([]);
+  const [coinData, setCoinData] = useState([]); // 원본 데이터
   const chartRef = useRef();
 
-  // 1. 코인 리스트 불러오기
+  // 1. 초기 코인 리스트 불러오기 (type=init)
   useEffect(() => {
-    fetch(`${API_URL}?type=golden_coins`)
+    fetch(`${API_URL}?type=init`)
       .then(res => res.json())
       .then(data => {
-        setCoins(data);
-        setSelectedCoin(data[0] || '');
-      });
+        if (data.error) {
+          console.error(data.error);
+          return;
+        }
+        // 거래대금순위 리스트로 coins 세팅
+        if (data.volumeRankList && data.volumeRankList.length > 0) {
+          setCoins(data.volumeRankList);
+          setSelectedCoin(data.volumeRankList[0]);
+        }
+      })
+      .catch(console.error);
   }, []);
 
-  // 2. 코인/기간 선택시 변동성 데이터 fetch
+  // 2. 선택된 코인 변경 시 원본 데이터 요청 (type=coinData)
   useEffect(() => {
     if (!selectedCoin) return;
-    fetch(`${API_URL}?type=golden&coin=${encodeURIComponent(selectedCoin)}&period=${selectedPeriod}`)
+    fetch(`${API_URL}?type=coinData&name=${encodeURIComponent(selectedCoin)}`)
       .then(res => res.json())
       .then(data => {
-        setHourly(Array.isArray(data.hourly) ? data.hourly : []);
-        setWeekly(Array.isArray(data.weekly) ? data.weekly : []);
+        if (data.error) {
+          console.error(data.error);
+          setCoinData([]);
+          return;
+        }
+        // data는 2차원 배열로 날짜, 시간, 고가, 저가, 시가, 종가 형태
+        setCoinData(data);
+      })
+      .catch(err => {
+        console.error(err);
+        setCoinData([]);
       });
-  }, [selectedCoin, selectedPeriod]);
+  }, [selectedCoin]);
 
-  // 3. Chart.js Radar 렌더
+  // 3. 차트 그리기 (예시로 시간별 종가 차트)
   useEffect(() => {
-    if (!chartRef.current || hourly.length !== 24) return;
+    if (!chartRef.current || coinData.length < 2) return;
     chartRef.current.innerHTML = '';
     const canvas = document.createElement('canvas');
     chartRef.current.appendChild(canvas);
+
+    // 데이터 가공 (헤더 제외, 시간 및 종가)
+    const labels = coinData.slice(1).map(row => `${row[0]} ${row[1]}시`);
+    const prices = coinData.slice(1).map(row => row[5]);
+
     new Chart(canvas, {
-      type: 'radar',
+      type: 'line',
       data: {
-        labels: Array.from({ length: 24 }, (_, i) => `${i}시`),
+        labels,
         datasets: [{
-          data: hourly,
+          label: `${selectedCoin} 시가/종가 중 종가`,
+          data: prices,
           borderColor: ACCENT,
-          backgroundColor: 'rgba(255, 214, 0, 0.15)',
-          pointBackgroundColor: ACCENT,
+          backgroundColor: 'rgba(255, 214, 0, 0.3)',
+          fill: true,
+          tension: 0.1,
+          pointRadius: 0,
         }]
       },
       options: {
         responsive: true,
-        plugins: { legend: { display: false } },
+        plugins: { legend: { labels: { color: TEXT } } },
         scales: {
-          r: {
-            angleLines: { color: '#303952' },
-            pointLabels: { color: TEXT, font: { size: 15, weight: 700 } },
-            ticks: { color: TEXT, showLabelBackdrop: false, font: { size: 13 } }
-          }
+          x: { ticks: { color: TEXT } },
+          y: { ticks: { color: TEXT } }
         }
       }
     });
-  }, [hourly]);
+  }, [coinData, selectedCoin]);
 
   return (
     <main style={{
@@ -83,7 +103,6 @@ export default function GoldentimePage() {
       padding: 0,
     }}>
       <NavBar />
-      {/* 우측상단 문의 버튼 */}
       <a
         href="http://pf.kakao.com/_xlLxcfxj/chat"
         target="_blank"
@@ -104,7 +123,6 @@ export default function GoldentimePage() {
       >
         잠코딩개발문의
       </a>
-      {/* 차트 카드 */}
       <div style={{
         margin: '50px auto 0 auto',
         background: CARD_BG,
@@ -138,76 +156,55 @@ export default function GoldentimePage() {
             >{c}</button>
           ))}
         </div>
-        {/* 기간 버튼 */}
-        <div style={{ display: 'flex', gap: 12, marginBottom: 32 }}>
-          {periods.map(p => (
-            <button
-              key={p.value}
-              onClick={() => setSelectedPeriod(p.value)}
-              style={{
-                padding: '6px 28px',
-                border: 'none',
-                borderRadius: 10,
-                background: selectedPeriod === p.value ? ACCENT : '#232d3f',
-                color: selectedPeriod === p.value ? '#000' : '#fff',
-                fontWeight: selectedPeriod === p.value ? 900 : 600,
-                fontSize: 17,
-                cursor: 'pointer',
-                boxShadow: selectedPeriod === p.value ? '0 1px 8px rgba(255,214,0,0.09)' : undefined
-              }}
-            >{p.label}</button>
-          ))}
-        </div>
-        {/* 레이더 차트 */}
+
+        {/* 차트 영역 */}
         <div ref={chartRef} style={{
           background: CARD_BG,
           borderRadius: 16,
           padding: 22,
           marginBottom: 36,
-          width: 540,
+          width: 640,
           minHeight: 420,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
         }} />
-        {/* 요일별 변동률 */}
+
+        {/* 원본 데이터 테이블 (간단 출력용) */}
         <div style={{
-          background: CARD_BG,
-          borderRadius: 13,
-          boxShadow: '0 1px 8px rgba(0,0,0,0.10)',
-          padding: 16,
-          minWidth: 330,
-          marginTop: 5
+          width: '100%',
+          maxHeight: 150,
+          overflowY: 'auto',
+          backgroundColor: '#232d3f',
+          borderRadius: 12,
+          padding: 12,
+          color: '#fff',
+          fontSize: 12,
+          fontFamily: 'monospace',
+          userSelect: 'text'
         }}>
-          <div style={{
-            display: 'flex',
-            gap: 12,
-            justifyContent: 'center',
-            marginBottom: 9,
-            color: '#ddd',
-            fontWeight: 600,
-            fontSize: 18
-          }}>
-            {['일','월','화','수','목','금','토'].map(d => <span key={d} style={{ minWidth: 36, textAlign: 'center' }}>{d}</span>)}
-          </div>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-            {weekly.map((v, i) =>
-              <span key={i}
-                style={{
-                  background: i === 1 ? ACCENT : '#232d3f',
-                  color: i === 1 ? '#181f2b' : '#fff',
-                  fontWeight: i === 1 ? 900 : 600,
-                  borderRadius: 9,
-                  minWidth: 36,
-                  textAlign: 'center',
-                  padding: 7,
-                  fontSize: 18,
-                  border: i === 1 ? '2px solid #ffe44e' : 'none'
-                }}>
-                {typeof v === 'number' ? v.toFixed(2) : '-'}%
-              </span>
-            )}
-          </div>
+          {coinData.length > 1 ? (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  {coinData[0].map((h, i) => (
+                    <th key={i} style={{ borderBottom: '1px solid #444', padding: '4px 6px', textAlign: 'center' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {coinData.slice(1, 20).map((row, idx) => (
+                  <tr key={idx}>
+                    {row.map((cell, i) => (
+                      <td key={i} style={{ borderBottom: '1px solid #333', padding: '3px 5px', textAlign: 'center' }}>{cell}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>데이터를 불러오는 중입니다...</p>
+          )}
         </div>
       </div>
     </main>
