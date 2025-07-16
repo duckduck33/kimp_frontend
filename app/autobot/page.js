@@ -25,7 +25,7 @@ export default function HomePage() {
       >
         {/* 버튼 */}
         <a
-          href="https://goldentime-production-ecbc.up.railway.app/"
+          href="https://autobot.fobit.app/"
           target="_blank"
           rel="noopener noreferrer"
           style={{
