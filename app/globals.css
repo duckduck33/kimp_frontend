@@ -24,3 +24,81 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.desc-text {
+  font-size: 1.03rem;
+  color: #ddd;
+  line-height: 1.65;
+  font-weight: 400;
+  margin: 10px 0 22px 0;
+  padding: 0 12px;
+  text-align: left;
+  letter-spacing: -0.01em;
+  font-family: Pretendard, Arial, sans-serif;
+}
+@media (max-width: 900px) {
+  .desc-text {
+    font-size: 0.82rem;
+    margin: 10px 0 16px 0;
+    padding: 0 4vw;
+  }
+}
+
+
+/* globals.css 하단에 추가 */
+
+/*
+   모바일 반응형 스타일 블록 전체를 주석 처리합니다.
+   내부에 중첩된 주석은 모두 제거해야 합니다.
+*/
+/*
+@media (max-width: 900px) {
+  body {
+    font-size: 0.97rem !important;
+    line-height: 1.45;
+  }
+  h1, h2, h3 {
+    font-size: 1.15rem !important;
+    margin-bottom: 0.6em;
+  }
+  table {
+    width: 100% !important;
+    font-size: 0.97rem !important;
+    min-width: 0 !important;
+  }
+  th, td {
+    font-size: 0.95rem !important;
+    padding: 0.25em 0.4em !important;
+  }
+  .dashboard-container,
+  .card,
+  .chart,
+  .table-wrap {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100vw !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 8px 4px !important;
+    margin: 0 !important;
+  }
+  button, .btn, .btn-row button {
+    font-size: 0.97rem !important;
+    padding: 6px 10px !important;
+    border-radius: 5px !important;
+  }
+  .nav-links a, .apply-btn, .kakao-btn {
+    font-size: 1rem !important;
+    padding: 0.7em 1em !important;
+  }
+  .table-wrap, .table-responsive {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .chart, .chart-wrap {
+    min-width: 0 !important;
+    width: 100vw !important;
+    padding: 0 !important;
+  }
+}
+*/

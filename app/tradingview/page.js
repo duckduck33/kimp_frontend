@@ -19,6 +19,8 @@ export default function HomePage() {
           fontFamily: 'Pretendard, sans-serif',
         }}
       >
+      </div>
+      <div className="desc-text">
         포비트가 직접 개발한 수익률 TOP10 지표를 업로드할 예정입니다. 
       </div>
     </>
