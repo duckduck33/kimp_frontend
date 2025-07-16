@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useRef } from 'react';
 import useWebSocket from 'react-use-websocket';
+import NavBar from '../components/NavBar';
+
 
 // WebSocket 주소
 const WS_URL = "wss://kimp-backend.onrender.com/ws/kimp";
