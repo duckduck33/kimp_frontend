@@ -227,18 +227,6 @@ export default function GoldentimePage() {
     <main style={{ background: BG, minHeight: '100vh', padding: 20, fontFamily: 'Pretendard,sans-serif', color: TEXT, position: 'relative' }}>
       <NavBar />
 
-        {/* 거래대금 10위 코인 목록(상장6개월미만 코인 제외) 제목 */}
-        <div style={{
-        color: TEXT,
-        fontWeight: '700',
-        fontSize: 18,
-        marginBottom: 10,
-        textAlign: 'center' // 가운데 정렬 원하면 추가
-        }}>
-        거래대금 10위 코인 목록 (상장 6개월 미만 코인 제외)
-        </div>
-
-
       {/* 코인 선택 버튼 */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 20 }}>
         {coins.map(coin => (
@@ -260,6 +248,21 @@ export default function GoldentimePage() {
           </button>
         ))}
       </div>
+
+
+        {/* 거래대금 10위 코인 목록(상장6개월미만 코인 제외) 제목 */}
+        <div style={{
+        color: TEXT,
+        fontWeight: '700',
+        fontSize: 18,
+        marginBottom: 10,
+        textAlign: 'center' // 가운데 정렬 원하면 추가
+        }}>
+        거래대금 10위 코인 목록 (상장 6개월 미만 코인 제외)
+        </div>
+
+
+
 
       {/* 기간 선택 버튼 */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 40 }}>
