@@ -1,33 +1,86 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import useWebSocket from 'react-use-websocket';
 
+// WebSocket 주소
+const WS_URL = "wss://kimp-backend.onrender.com/ws/kimp";
 
-// const WS_URL =
-//   process.env.NEXT_PUBLIC_WS_URL ||
-//   'ws://144.24.75.165:8000/ws/kimp'; // 여기에 Oracle 서버의 공인 IP와 백엔드 포트 8000을 사용
+// 코인별 트레이딩뷰 심볼 (원하면 BYBIT 등도 추가)
+const symbolMap = {
+  BTC: 'BYBIT:BTCUSDT',
+  ETH: 'BYBIT:ETHUSDT',
+  XRP: 'BYBIT:XRPUSDT',
+  BCH: 'BYBIT:BCHUSDT',
+  SOL: 'BYBIT:SOLUSDT',
+  DOGE: 'BYBIT:DOGEUSDT',
+  AAVE: 'BYBIT:AAVEUSDT',
+  ADA: 'BYBIT:ADAUSDT',
+};
 
 
-// const WS_URL = 'ws://localhost:8000/ws/kimp'; // FastAPI WS 엔드포인트
-const WS_URL = "wss://kimp-backend.onrender.com/ws/kimp"; // FastAPI WS 엔드포인트
-// const WS_URL = "ws://144.24.75.165:8000/ws/kimp"; // FastAPI WS 엔드포인트
+// 트레이딩뷰 차트 위젯 컴포넌트
+function TradingViewChart({ symbol }) {
+  const ref = useRef();
 
+  useEffect(() => {
+    if (!symbol) return;
+    ref.current.innerHTML = '';
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      autosize: false,
+      height: 420,
+      width: "100%",
+      symbol: symbol,
+      interval: "15",
+      timezone: "Asia/Seoul",
+      theme: "dark",
+      style: "1",
+      locale: "kr",
+      toolbar_bg: "#181f2b",
+      enable_publishing: false,
+      hide_top_toolbar: false,
+      hide_legend: false,
+      save_image: false,
+      studies: [],
+      container_id: "tradingview_chart_container"
+    });
+    ref.current.appendChild(script);
+  }, [symbol]);
+
+  return (
+    <div
+      id="tradingview_chart_container"
+      ref={ref}
+      style={{
+        width: '100%',
+        height: 420, // 이 한 줄이면 충분!
+        maxWidth: 1000,
+        margin: '40px auto 0 auto',
+        background: '#181f2b',
+        borderRadius: 12,
+        boxShadow: '0 2px 16px rgba(0,0,0,0.2)'
+      }}
+    />
+  );
+}
 
 export default function HomePage() {
-  // 서버로부터 받은 시세/김프 데이터를 저장하는 상태
+  // 상태 관리
   const [coins, setCoins] = useState([]);
-  // 환율을 저장하는 상태
   const [exchangeRate, setExchangeRate] = useState(null);
+  const [selectedCoin, setSelectedCoin] = useState('BTC'); // 기본 선택
 
-  // WebSocket 훅: 자동 재연결 설정
+  // WebSocket 연결
   const { lastMessage, readyState } = useWebSocket(WS_URL, {
-    shouldReconnect: () => true,       // 끊어져도 무한 재연결
-    reconnectAttempts: Infinity,       // 재시도 횟수 무제한
-    reconnectInterval: 3000,           // 3초마다 재연결 시도
+    shouldReconnect: () => true,
+    reconnectAttempts: Infinity,
+    reconnectInterval: 3000,
   });
 
-  // 메시지 수신 시 JSON 파싱 후 상태 업데이트
+  // 데이터 수신 처리
   useEffect(() => {
     if (lastMessage?.data) {
       try {
@@ -35,8 +88,6 @@ export default function HomePage() {
         if (data.exchange_rate && data.coin_data) {
           setExchangeRate(data.exchange_rate);
           setCoins(data.coin_data);
-        } else {
-          console.error('수신된 데이터 형식이 예상과 다릅니다:', data);
         }
       } catch (e) {
         console.error('데이터 파싱 오류:', e);
@@ -54,6 +105,7 @@ export default function HomePage() {
         fontFamily: 'Pretendard, sans-serif',
       }}
     >
+
       {/* 환율 표시 */}
       <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', textAlign: 'left' }}>
         테더환율: {exchangeRate ? `${exchangeRate.toFixed(2)} KRW/USDT` : '불러오는 중...'}
@@ -64,7 +116,15 @@ export default function HomePage() {
         실시간 김프(업비트 ↔ 바이비트)
       </h1>
 
-      {/* 테이블 래퍼: 가로 스크롤 시에도 레이아웃 깨지지 않도록 */}
+      {/* 상단 트레이딩뷰 차트 */}
+      <section style={{ margin: '0 auto 2rem auto', maxWidth: 900 }}>
+        <TradingViewChart symbol={symbolMap[selectedCoin]} />
+      </section>
+
+
+
+
+      {/* 테이블 래퍼 */}
       <div style={{ overflowX: 'auto' }}>
         <table
           style={{
@@ -92,7 +152,15 @@ export default function HomePage() {
               </tr>
             ) : (
               coins.map((row) => (
-                <tr key={row.coin}>
+                <tr
+                  key={row.coin}
+                  onClick={() => setSelectedCoin(row.coin)}
+                  style={{
+                    cursor: 'pointer',
+                    background: selectedCoin === row.coin ? '#222e41' : undefined,
+                    fontWeight: selectedCoin === row.coin ? 'bold' : undefined,
+                  }}
+                >
                   <td style={tdStyle}>{row.coin}</td>
                   <td style={tdStyle}>
                     {row.upbit_krw?.toLocaleString() ?? '—'} KRW
@@ -129,7 +197,8 @@ export default function HomePage() {
         </table>
       </div>
 
-      {/* WebSocket 연결 상태 및 실제 사용하는 URL 표시 */}
+
+      {/* WebSocket 연결 상태 */}
       <div style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#888' }}>
         <p>
           WebSocket 연결 상태:{' '}
@@ -138,7 +207,7 @@ export default function HomePage() {
         <p>WS_URL: {WS_URL}</p>
       </div>
 
-      {/* 우측 상단 고정 문의 버튼 */}
+      {/* 문의 버튼 */}
       <a
         href="http://pf.kakao.com/_xlLxcfxj/chat"
         target="_blank"
