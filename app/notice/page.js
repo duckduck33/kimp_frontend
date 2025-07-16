@@ -19,7 +19,7 @@ export default function HomePage() {
           fontFamily: 'Pretendard, sans-serif',
         }}
       >
-        개발중입니다
+        업비트를 비롯한 국내외 거래소의 상장공지, 거래유의공지를 실시간으로 모니터링하여 매매에 활용할 수 있도록 개발하고 있습니다
       </div>
     </>
   );

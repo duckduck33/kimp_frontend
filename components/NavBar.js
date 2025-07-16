@@ -57,7 +57,7 @@ export default function NavBar() {
               textDecoration: pathname === "/tradingview" ? "underline" : "none",
             }}
           >
-            트레이딩뷰지표 테스트
+            TOP10지표
           </Link>
         </div>
 
