@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react"; // useEffect 추가
 
 export default function NavBar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [navHeight, setNavHeight] = useState(0); // navHeight 상태 추가
 
   // 메뉴 링크 정보
   const links = [
@@ -16,6 +17,15 @@ export default function NavBar() {
     { href: "/tradingview", label: "TOP10지표" },
     { href: "/autobot", label: "자동매매" },
   ];
+
+  // NavBar 높이를 측정하여 CSS 변수로 설정
+  useEffect(() => {
+    const navbarElement = document.querySelector(".navbar");
+    if (navbarElement) {
+      setNavHeight(navbarElement.offsetHeight);
+      document.documentElement.style.setProperty('--nav-height', `${navbarElement.offsetHeight}px`);
+    }
+  }, []);
 
   return (
     <>
@@ -71,6 +81,7 @@ export default function NavBar() {
           background: #181f2b;
           box-shadow: 0 2px 8px rgba(0,0,0,0.15);
           width: 100%;
+          height: var(--nav-height, 70px); /* 동적으로 계산된 높이 사용, 기본값 70px */
         }
         .navbar-inner {
           display: flex; align-items: center; justify-content: space-between;
@@ -133,7 +144,7 @@ export default function NavBar() {
           .nav-links {
             display: none;
             position: absolute;
-            left: 0; right: 0; top: 60px;
+            left: 0; right: 0; top: var(--nav-height, 60px); /* 모바일 메뉴도 동적 높이 사용 */
             flex-direction: column;
             background: #181f2b;
             box-shadow: 0 6px 16px rgba(0,0,0,0.15);

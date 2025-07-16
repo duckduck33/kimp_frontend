@@ -223,6 +223,18 @@ export default function GoldentimePage() {
 
   const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
 
+  // 페이지 상단 패딩을 동적으로 설정
+  useEffect(() => {
+    const mainElement = document.querySelector('main');
+    if (mainElement) {
+      const navHeight = getComputedStyle(document.documentElement).getPropertyValue('--nav-height');
+      if (navHeight) {
+        mainElement.style.paddingTop = `calc(${navHeight} + 20px)`; // 기본 패딩 20px 유지
+      }
+    }
+  }, []);
+
+
   return (
     <main style={{ background: BG, minHeight: '100vh', padding: 20, fontFamily: 'Pretendard,sans-serif', color: TEXT, position: 'relative' }}>
       <NavBar />
