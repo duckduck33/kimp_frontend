@@ -250,7 +250,7 @@ export default function GoldentimePage() {
       </div>
 
 
-        {/* 거래대금 10위 코인 목록(상장6개월미만 코인 제외) 제목 */}
+        {/* 업비트 거래대금 10위 코인 목록(상장6개월미만 코인 제외) 제목 */}
         <div style={{
         color: TEXT,
         fontWeight: '700',
