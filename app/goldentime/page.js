@@ -54,16 +54,18 @@ export default function GoldentimePage() {
   useEffect(() => {
     if (!selectedCoin) return;
 
+    setLoading(true);  // 로딩 시작
+
     if (rawDataCache[selectedCoin]) {
       processRawData(rawDataCache[selectedCoin], selectedPeriod);
+      setLoading(false);  // 캐시 사용시 바로 로딩 끝
       return;
     }
 
-    setLoading(true);
     fetch(`${API_URL}?type=coinData&name=${encodeURIComponent(selectedCoin)}`)
       .then(res => res.json())
       .then(rawData => {
-        setLoading(false);
+        setLoading(false);  // 데이터 받아오면 로딩 끝
         if (!Array.isArray(rawData) || rawData.length < 2) {
           console.error('원본 데이터가 없습니다.');
           clearVolatilityData();
@@ -73,7 +75,7 @@ export default function GoldentimePage() {
         processRawData(rawData, selectedPeriod);
       })
       .catch(err => {
-        setLoading(false);
+        setLoading(false);  // 에러 발생해도 로딩 끝
         console.error(err);
         clearVolatilityData();
       });
@@ -182,6 +184,8 @@ export default function GoldentimePage() {
         plugins: {
           legend: { display: false },
           tooltip: {
+            bodyFont: { size: 14 },
+            titleFont: { size: 16, weight: 'bold' },
             callbacks: {
               label: ctx => {
                 const idx = ctx.dataIndex;
@@ -224,7 +228,7 @@ export default function GoldentimePage() {
       <NavBar />
 
       {/* 코인 선택 버튼 */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 20 }}>
         {coins.map(coin => (
           <button
             key={coin}
@@ -246,7 +250,7 @@ export default function GoldentimePage() {
       </div>
 
       {/* 기간 선택 버튼 */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 40 }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 40 }}>
         {periods.map(p => (
           <button
             key={p.value}
@@ -325,34 +329,39 @@ export default function GoldentimePage() {
           boxShadow: '0 0 15px rgba(255, 215, 0, 0.3)',
           userSelect: 'none',
           display: 'flex',
-          justifyContent: 'space-between',
+          justifyContent: 'center',
+          gap: 6,
           margin: '0 auto'
         }}
       >
-        {dayVolatility.length === 7 ? dayVolatility.map((val, idx) => (
-          <div
-            key={idx}
-            style={{
-              flex: 1,
-              textAlign: 'center',
-              padding: '12px 0',
-              borderRadius: 12,
-              border: '1.5px solid #aaa',
-              backgroundColor: idx === 1 ? ACCENT : 'transparent',
-              fontWeight: idx === 1 ? '700' : '400',
-              color: idx === 1 ? '#000' : '#ccc',
-              marginLeft: idx === 0 ? 0 : 6,
-              marginRight: idx === dayVolatility.length - 1 ? 0 : 6,
-              userSelect: 'text',
-              cursor: 'default',
-              fontSize: 18,
-              lineHeight: 1.1
-            }}
-          >
-            <div>{['일', '월', '화', '수', '목', '금', '토'][idx]}</div>
-            <div style={{ marginTop: 6 }}>{val.toFixed(2)}%</div>
-          </div>
-        )) : <p style={{ color: '#999' }}>요일별 변동률 데이터를 불러오는 중입니다...</p>}
+        {loading ? (
+          <p style={{ color: '#ccc', fontSize: 16, userSelect: 'none' }}>
+            요일별 변동률 데이터를 불러오는 중입니다...
+          </p>
+        ) : (
+          dayVolatility.length === 7 ? dayVolatility.map((val, idx) => (
+            <div
+              key={idx}
+              style={{
+                flex: 1,
+                textAlign: 'center',
+                padding: '12px 0',
+                borderRadius: 12,
+                border: '1.5px solid #aaa',
+                backgroundColor: idx === 1 ? ACCENT : 'transparent',
+                fontWeight: idx === 1 ? '700' : '400',
+                color: idx === 1 ? '#000' : '#ccc',
+                userSelect: 'text',
+                cursor: 'default',
+                fontSize: 18,
+                lineHeight: 1.1
+              }}
+            >
+              <div>{['일', '월', '화', '수', '목', '금', '토'][idx]}</div>
+              <div style={{ marginTop: 6 }}>{val.toFixed(2)}%</div>
+            </div>
+          )) : <p style={{ color: '#999' }}>요일별 변동률 데이터를 불러오는 중입니다...</p>
+        )}
       </section>
     </main>
   );
