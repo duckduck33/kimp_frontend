@@ -2,14 +2,12 @@
 
 import { useEffect, useState, useRef } from 'react';
 import useWebSocket from 'react-use-websocket';
-import NavBar from '../../components/NavBar';
-
-
+import NavBar from '../../components/NavBar'; // 반드시 맨 위에 import!
 
 // WebSocket 주소
 const WS_URL = "wss://kimp-backend.onrender.com/ws/kimp";
 
-// 코인별 트레이딩뷰 심볼 (원하면 BYBIT 등도 추가)
+// 코인별 트레이딩뷰 심볼 (바이비트 기준)
 const symbolMap = {
   BTC: 'BYBIT:BTCUSDT',
   ETH: 'BYBIT:ETHUSDT',
@@ -20,7 +18,6 @@ const symbolMap = {
   AAVE: 'BYBIT:AAVEUSDT',
   ADA: 'BYBIT:ADAUSDT',
 };
-
 
 // 트레이딩뷰 차트 위젯 컴포넌트
 function TradingViewChart({ symbol }) {
@@ -59,7 +56,7 @@ function TradingViewChart({ symbol }) {
       ref={ref}
       style={{
         width: '100%',
-        height: 420, // 이 한 줄이면 충분!
+        height: 420,
         maxWidth: 1000,
         margin: '40px auto 0 auto',
         background: '#181f2b',
@@ -70,7 +67,7 @@ function TradingViewChart({ symbol }) {
   );
 }
 
-export default function HomePage() {
+export default function GoldentimePage() {
   // 상태 관리
   const [coins, setCoins] = useState([]);
   const [exchangeRate, setExchangeRate] = useState(null);
@@ -99,138 +96,136 @@ export default function HomePage() {
   }, [lastMessage]);
 
   return (
-    <main
-      style={{
-        padding: '2rem',
-        backgroundColor: '#101728',
-        minHeight: '100vh',
-        color: '#fff',
-        fontFamily: 'Pretendard, sans-serif',
-      }}
-    >
-
-      {/* 환율 표시 */}
-      <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', textAlign: 'left' }}>
-        테더환율: {exchangeRate ? `${exchangeRate.toFixed(2)} KRW/USDT` : '불러오는 중...'}
-      </h2>
-
-      {/* 페이지 제목 */}
-      <h1 style={{ fontSize: '2.2rem', marginBottom: '1rem', textAlign: 'center' }}>
-        실시간 김프(업비트 ↔ 바이비트)
-      </h1>
-
-      {/* 상단 트레이딩뷰 차트 */}
-      <section style={{ margin: '0 auto 2rem auto', maxWidth: 900 }}>
-        <TradingViewChart symbol={symbolMap[selectedCoin]} />
-      </section>
-
-
-
-
-      {/* 테이블 래퍼 */}
-      <div style={{ overflowX: 'auto' }}>
-        <table
-          style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            minWidth: 700,
-            backgroundColor: '#181f2b',
-          }}
-        >
-          <thead>
-            <tr style={{ backgroundColor: '#232d3f' }}>
-              <th style={thStyle}>코인</th>
-              <th style={thStyle}>업비트(KRW)</th>
-              <th style={thStyle}>바이비트(USDT)</th>
-              <th style={thStyle}>바이비트(KRW 환산)</th>
-              <th style={thStyle}>김프(%)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {coins.length === 0 ? (
-              <tr>
-                <td colSpan={5} style={{ textAlign: 'center', padding: '1rem' }}>
-                  데이터 수신 대기중...
-                </td>
-              </tr>
-            ) : (
-              coins.map((row) => (
-                <tr
-                  key={row.coin}
-                  onClick={() => setSelectedCoin(row.coin)}
-                  style={{
-                    cursor: 'pointer',
-                    background: selectedCoin === row.coin ? '#222e41' : undefined,
-                    fontWeight: selectedCoin === row.coin ? 'bold' : undefined,
-                  }}
-                >
-                  <td style={tdStyle}>{row.coin}</td>
-                  <td style={tdStyle}>
-                    {row.upbit_krw?.toLocaleString() ?? '—'} KRW
-                  </td>
-                  <td style={tdStyle}>
-                    {row.bybit_usdt
-                      ? row.bybit_usdt.toLocaleString(undefined, {
-                          minimumFractionDigits: 4,
-                          maximumFractionDigits: 8,
-                        })
-                      : '—'}{' '}
-                    USDT
-                  </td>
-                  <td style={tdStyle}>
-                    {row.bybit_krw?.toLocaleString() ?? '—'} KRW
-                  </td>
-                  <td
-                    style={{
-                      ...tdStyle,
-                      color:
-                        row.kimp_percent < 0
-                          ? '#FF4760'
-                          : row.kimp_percent > 0
-                          ? '#42f579'
-                          : '#fff',
-                    }}
-                  >
-                    {row.kimp_percent?.toFixed(2) ?? '—'}%
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-
-      {/* WebSocket 연결 상태 */}
-      <div style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#888' }}>
-        <p>
-          WebSocket 연결 상태:{' '}
-          {readyState === 1 ? '연결됨' : '연결 중'} ({readyState})
-        </p>
-        <p>WS_URL: {WS_URL}</p>
-      </div>
-
-      {/* 문의 버튼 */}
-      <a
-        href="http://pf.kakao.com/_xlLxcfxj/chat"
-        target="_blank"
-        rel="noopener noreferrer"
+    <>
+      <NavBar /> {/* 여기! 상단 메뉴 항상 노출 */}
+      <main
         style={{
-          position: 'fixed',
-          top: '20px',
-          right: '20px',
-          backgroundColor: '#FFEB00',
-          color: '#000',
-          padding: '12px 16px',
-          borderRadius: '4px',
-          fontWeight: 'bold',
-          textDecoration: 'none',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+          padding: '2rem',
+          backgroundColor: '#101728',
+          minHeight: '100vh',
+          color: '#fff',
+          fontFamily: 'Pretendard, sans-serif',
         }}
       >
-        잠코딩개발문의
-      </a>
-    </main>
+        {/* 환율 표시 */}
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', textAlign: 'left' }}>
+          테더환율: {exchangeRate ? `${exchangeRate.toFixed(2)} KRW/USDT` : '불러오는 중...'}
+        </h2>
+
+        {/* 페이지 제목 */}
+        <h1 style={{ fontSize: '2.2rem', marginBottom: '1rem', textAlign: 'center' }}>
+          실시간 김프(업비트 ↔ 바이비트)
+        </h1>
+
+        {/* 트레이딩뷰 차트(테이블 아래쪽에 두려면 위치만 옮기면 됨) */}
+        <section style={{ margin: '0 auto 2rem auto', maxWidth: 900 }}>
+          <TradingViewChart symbol={symbolMap[selectedCoin]} />
+        </section>
+
+        {/* 테이블 */}
+        <div style={{ overflowX: 'auto' }}>
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              minWidth: 700,
+              backgroundColor: '#181f2b',
+            }}
+          >
+            <thead>
+              <tr style={{ backgroundColor: '#232d3f' }}>
+                <th style={thStyle}>코인</th>
+                <th style={thStyle}>업비트(KRW)</th>
+                <th style={thStyle}>바이비트(USDT)</th>
+                <th style={thStyle}>바이비트(KRW 환산)</th>
+                <th style={thStyle}>김프(%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {coins.length === 0 ? (
+                <tr>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '1rem' }}>
+                    데이터 수신 대기중...
+                  </td>
+                </tr>
+              ) : (
+                coins.map((row) => (
+                  <tr
+                    key={row.coin}
+                    onClick={() => setSelectedCoin(row.coin)}
+                    style={{
+                      cursor: 'pointer',
+                      background: selectedCoin === row.coin ? '#222e41' : undefined,
+                      fontWeight: selectedCoin === row.coin ? 'bold' : undefined,
+                    }}
+                  >
+                    <td style={tdStyle}>{row.coin}</td>
+                    <td style={tdStyle}>
+                      {row.upbit_krw?.toLocaleString() ?? '—'} KRW
+                    </td>
+                    <td style={tdStyle}>
+                      {row.bybit_usdt
+                        ? row.bybit_usdt.toLocaleString(undefined, {
+                            minimumFractionDigits: 4,
+                            maximumFractionDigits: 8,
+                          })
+                        : '—'}{' '}
+                      USDT
+                    </td>
+                    <td style={tdStyle}>
+                      {row.bybit_krw?.toLocaleString() ?? '—'} KRW
+                    </td>
+                    <td
+                      style={{
+                        ...tdStyle,
+                        color:
+                          row.kimp_percent < 0
+                            ? '#FF4760'
+                            : row.kimp_percent > 0
+                            ? '#42f579'
+                            : '#fff',
+                      }}
+                    >
+                      {row.kimp_percent?.toFixed(2) ?? '—'}%
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* WebSocket 연결 상태 */}
+        <div style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#888' }}>
+          <p>
+            WebSocket 연결 상태:{' '}
+            {readyState === 1 ? '연결됨' : '연결 중'} ({readyState})
+          </p>
+          <p>WS_URL: {WS_URL}</p>
+        </div>
+
+        {/* 문의 버튼 */}
+        <a
+          href="http://pf.kakao.com/_xlLxcfxj/chat"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            backgroundColor: '#FFEB00',
+            color: '#000',
+            padding: '12px 16px',
+            borderRadius: '4px',
+            fontWeight: 'bold',
+            textDecoration: 'none',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+          }}
+        >
+          잠코딩개발문의
+        </a>
+      </main>
+    </>
   );
 }
 
