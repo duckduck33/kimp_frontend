@@ -30,16 +30,23 @@ body {
   color: #ddd;
   line-height: 1.65;
   font-weight: 400;
-  margin: 10px 0 22px 0;
-  padding: 0 12px;
-  text-align: left;
   letter-spacing: -0.01em;
   font-family: Pretendard, Arial, sans-serif;
+
+  text-align: center;
+  padding: 0 12px;
+
+  /* 중앙 정렬을 위한 스타일 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: auto;
+  min-height: 80px; /* 적절히 조절 */
 }
+
 @media (max-width: 900px) {
   .desc-text {
     font-size: 0.82rem;
-    margin: 10px 0 16px 0;
     padding: 0 4vw;
   }
 }
