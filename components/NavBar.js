@@ -10,6 +10,11 @@ export default function NavBar() {
     <>
       <nav
         style={{
+          position: "fixed",        // 화면 상단 고정
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -18,6 +23,7 @@ export default function NavBar() {
           fontSize: "1.45rem",
           fontWeight: 700,
           width: "100%",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         }}
       >
         {/* 왼쪽 메뉴 그룹 */}
@@ -54,7 +60,8 @@ export default function NavBar() {
             href="/tradingview"
             style={{
               color: pathname === "/tradingview" ? "#FFD700" : "#fff",
-              textDecoration: pathname === "/tradingview" ? "underline" : "none",
+              textDecoration:
+                pathname === "/tradingview" ? "underline" : "none",
             }}
           >
             TOP10지표
