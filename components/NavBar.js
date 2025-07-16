@@ -1,4 +1,4 @@
-// components/NavBar.js
+"use client"; // 꼭 추가!
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
