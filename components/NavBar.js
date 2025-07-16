@@ -50,6 +50,15 @@ export default function NavBar() {
           >
             거래소공지모니터링
           </Link>
+          <Link
+            href="/tradingview"
+            style={{
+              color: pathname === "/tradingview" ? "#FFD700" : "#fff",
+              textDecoration: pathname === "/tradingview" ? "underline" : "none",
+            }}
+          >
+            트레이딩뷰지표 테스트
+          </Link>
         </div>
 
         {/* 오른쪽 상단 버튼 그룹 */}
