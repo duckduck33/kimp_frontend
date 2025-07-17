@@ -97,8 +97,18 @@ export default function HomePage() {
 
   return (
     <>
-      <main style={{ background: BG, minHeight: '100vh', padding: 20, fontFamily: 'Pretendard,sans-serif', color: TEXT, position: 'relative' }}>
-        <NavBar />
+
+      <main
+        style={{
+          padding: '2rem',
+          backgroundColor: '#101728',
+          minHeight: '100vh',
+          color: '#fff',
+          fontFamily: 'Pretendard, sans-serif',
+        }}
+      >
+      <NavBar /> {/* 여기! 상단 메뉴 항상 노출 */}
+
         {/* 환율 표시 */}
         <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', textAlign: 'left' }}>
           테더환율: {exchangeRate ? `${exchangeRate.toFixed(2)} KRW/USDT` : '불러오는 중...'}
