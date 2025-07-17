@@ -95,16 +95,16 @@ export default function HomePage() {
     }
   }, [lastMessage]);
 
-  // 페이지 상단 패딩을 동적으로 설정
-  useEffect(() => {
-    const mainElement = document.querySelector('main');
-    if (mainElement) {
-      const navHeight = getComputedStyle(document.documentElement).getPropertyValue('--nav-height');
-      if (navHeight) {
-        mainElement.style.paddingTop = `calc(${navHeight} + 20px)`; // 기본 패딩 20px 유지
-      }
-    }
-  }, []);
+  // // 페이지 상단 패딩을 동적으로 설정
+  // useEffect(() => {
+  //   const mainElement = document.querySelector('main');
+  //   if (mainElement) {
+  //     const navHeight = getComputedStyle(document.documentElement).getPropertyValue('--nav-height');
+  //     if (navHeight) {
+  //       mainElement.style.paddingTop = `calc(${navHeight} + 20px)`; // 기본 패딩 20px 유지
+  //     }
+  //   }
+  // }, []);
 
 
 

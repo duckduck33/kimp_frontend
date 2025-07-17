@@ -3,6 +3,12 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --nav-height: 64px;
+}
+
+/* 모든 main에 nav 높이만큼 padding-top 적용 */
+main {
+  padding-top: calc(var(--nav-height) + 20px);
 }
 
 @theme inline {
