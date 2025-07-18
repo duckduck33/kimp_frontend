@@ -10,21 +10,19 @@ export default function NoticePage() {
   const [grouped, setGrouped] = useState({});
 
   useEffect(() => {
-    const sampleData = [
-      { exchange: '업비트', type: '상장', asset: '칼데라(ERA)', trade_time: '2025-07-18T01:00:00', link: 'https://upbit.com/service_center/notice?id=1234' },
-      { exchange: '업비트', type: '유의', asset: '루나(LUNA)', trade_time: '2025-07-19T10:00:00', link: 'https://upbit.com/service_center/notice?id=5678' },
-      { exchange: '바이낸스', type: '상장', asset: 'XAI', trade_time: '2025-07-20T16:00:00', link: 'https://binance.com/announcement/xai' },
-      { exchange: '바이낸스', type: '유의', asset: 'DOGE', trade_time: '2025-07-21T10:00:00', link: 'https://binance.com/announcement/doge' },
-      { exchange: '빗썸', type: '상장', asset: 'ZETA', trade_time: '2025-07-22T15:00:00', link: 'https://bithumb.com/notice/zeta' },
-      { exchange: '빗썸', type: '유의', asset: '세럼(SRM)', trade_time: '2025-07-18T18:30:00', link: 'https://bithumb.com/notice/srm' },
-    ];
+    const fetchData = async () => {
+      try {
+        const res = await fetch('/api/notices');
+        const data = await res.json();
+        setGrouped(groupByExchangeAndType(data));
+      } catch (e) {
+        console.error('공지 데이터 로딩 실패:', e);
+      }
+    };
 
-    const groupedData = {};
-    for (const item of sampleData) {
-      if (!groupedData[item.exchange]) groupedData[item.exchange] = { 상장: [], 유의: [] };
-      groupedData[item.exchange][item.type].push(item);
-    }
-    setGrouped(groupedData);
+    fetchData();
+    const interval = setInterval(fetchData, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -40,7 +38,9 @@ export default function NoticePage() {
     >
       <NavBar />
 
-      <h1 className="text-3xl font-bold text-center mt-10 mb-10">🚨 거래소별 통합 상장공지 상폐공지 (*현재 샘플이고 개발중임다) </h1>
+      <h1 className="text-3xl font-bold text-center mt-10 mb-10">
+        🚨 거래소별 통합 상장공지 상폐공지 (*현재 샘플이고 개발중)
+      </h1>
 
       {Object.keys(grouped).length === 0 ? (
         <p className="text-center text-gray-300">📡 데이터를 불러오는 중입니다...</p>
@@ -89,7 +89,6 @@ export default function NoticePage() {
   );
 }
 
-// 카드 컴포넌트
 function NoticeCard({ notice }) {
   const remaining = getRemainingTime(notice.trade_time);
   return (
@@ -107,6 +106,15 @@ function NoticeCard({ notice }) {
       </a>
     </div>
   );
+}
+
+function groupByExchangeAndType(data) {
+  const grouped = {};
+  for (const item of data) {
+    if (!grouped[item.exchange]) grouped[item.exchange] = { 상장: [], 유의: [] };
+    grouped[item.exchange][item.type].push(item);
+  }
+  return grouped;
 }
 
 function formatDate(dateStr) {
