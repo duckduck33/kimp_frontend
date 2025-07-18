@@ -6,37 +6,43 @@ import { useEffect, useState } from 'react';
 export default function NoticePage() {
   const BG = '#101728';
   const TEXT = '#FFFFFF';
+
   const [grouped, setGrouped] = useState({});
 
   useEffect(() => {
-    const fetchTelegramNotices = async () => {
-      try {
-        const res = await fetch(
-          'https://api.rss2json.com/v1/api.json?rss_url=https://tg.i-c-a.su/sangjangsangpe/rss.xml'
-        );
-        const json = await res.json();
-
-        const mapped = json.items
-          .filter(item => item.title.includes('상장') || item.title.includes('유의'))
-          .map(item => {
-            const type = item.title.includes('유의') ? '유의' : '상장';
-            const asset = extractAsset(item.title);
-            const exchange = '텔레그램';
-            const trade_time = new Date(item.pubDate).toISOString(); // RSS 발행시간
-            const link = item.link;
-
-            return { exchange, type, asset, trade_time, link };
-          });
-
-        setGrouped(groupByExchangeAndType(mapped));
-      } catch (err) {
-        console.error('📡 텔레그램 공지 fetch 실패:', err);
+    // ✅ 더미 데이터 직접 삽입
+    const sampleData = [
+      {
+        exchange: '업비트',
+        type: '상장',
+        asset: '칼데라(ERA)',
+        trade_time: '2025-07-18T01:00:00',
+        link: 'https://upbit.com/service_center/notice?id=1234',
+      },
+      {
+        exchange: '업비트',
+        type: '유의',
+        asset: '루나(LUNA)',
+        trade_time: '2025-07-19T10:00:00',
+        link: 'https://upbit.com/service_center/notice?id=5678',
+      },
+      {
+        exchange: '바이낸스',
+        type: '상장',
+        asset: 'XAI',
+        trade_time: '2025-07-20T16:00:00',
+        link: 'https://binance.com/announcement/xai',
+      },
+      {
+        exchange: '빗썸',
+        type: '유의',
+        asset: '세럼(SRM)',
+        trade_time: '2025-07-18T18:30:00',
+        link: 'https://bithumb.com/notice/srm',
       }
-    };
+    ];
 
-    fetchTelegramNotices();
-    const interval = setInterval(fetchTelegramNotices, 10000);
-    return () => clearInterval(interval);
+    setGrouped(groupByExchangeAndType(sampleData));
   }, []);
 
   return (
@@ -53,7 +59,7 @@ export default function NoticePage() {
       <NavBar />
 
       <h1 className="text-3xl font-bold text-center mt-10 mb-10">
-        🚨 거래소별 통합 상장공지 상폐공지 (*현재 텔레그램 공지 기반 개발중)
+        🚨 거래소별 통합 상장공지 상폐공지 (*현재 샘플이고 개발중)
       </h1>
 
       {Object.keys(grouped).length === 0 ? (
@@ -67,6 +73,7 @@ export default function NoticePage() {
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* ✅ 상장 공지 */}
                 <div>
                   <h3 className="text-md font-semibold text-green-400 mb-3">✅ 상장 공지</h3>
                   {types.상장.length === 0 ? (
@@ -80,6 +87,7 @@ export default function NoticePage() {
                   )}
                 </div>
 
+                {/* ⚠️ 거래 유의 공지 */}
                 <div>
                   <h3 className="text-md font-semibold text-yellow-400 mb-3">⚠️ 거래 유의 공지</h3>
                   {types.유의.length === 0 ? (
@@ -143,9 +151,4 @@ function getRemainingTime(dateStr) {
   const hours = Math.floor(mins / 60);
   const remainMins = mins % 60;
   return `${hours}시간 ${remainMins}분 남음`;
-}
-
-function extractAsset(title) {
-  const match = title.match(/([\w\s\-.()]+)\s+(?:상장|유의)/);
-  return match ? match[1].trim() : '자산명 추출 실패';
 }
