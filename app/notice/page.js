@@ -58,7 +58,7 @@ export default function NoticePage() {
   useEffect(() => {
     async function fetchNotice() {
       try {
-        const res = await fetch("https://YOUR_RAILWAY_DOMAIN/latest_notice"); // 도메인 교체
+        const res = await fetch("https://noticebot-production.up.railway.app/latest_notice"); // 도메인 교체
         const data = await res.json();
 
         if (data.assets && Array.isArray(data.assets)) {
