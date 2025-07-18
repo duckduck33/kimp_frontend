@@ -39,7 +39,7 @@ export default function NoticePage() {
       <NavBar />
 
       <h1 className="text-3xl font-bold text-center mt-10 mb-10">
-        🚨 거래소별 통합 상장공지 상폐공지 (*현재 샘플이고 개발중)
+        🚨 거래소별 통합 공지 모니터링 (*현재는 업비트감시만 됩니다. 다른거래소는 개발중.)
       </h1>
 
       {Object.keys(grouped).length === 0 ? (
