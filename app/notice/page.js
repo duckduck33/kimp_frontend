@@ -22,7 +22,7 @@ export default function NoticePage() {
         link: 'https://upbit.com/service_center/notice?id=5678',
       },
       {
-        exchange: '바이낸스',
+        exchange: '바이낸스1',
         asset: 'XAI',
         trade_time: '2025-07-20T16:00:00',
         link: 'https://binance.com/announcement/xai',
