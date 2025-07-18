@@ -3,15 +3,15 @@
 import NavBar from '../../components/NavBar';
 import { useEffect, useState } from 'react';
 
-// ✅ 더미 데이터(업비트 상장/유의는 실시간 fetch로 덮어씀)
+// ⚡️ 기존 더미 데이터 (바이낸스, 빗썸 등 + 유의 공지 포함)
 const sampleData = [
   {
     exchange: '업비트',
     type: '상장',
-    asset: '칼데라(ERA)',
+    asset: '칼데라(ERA)',      // 이 부분은 서버에서 실시간으로 덮어씀
     trade_time: '2025-07-18T01:00:00',
     link: 'https://upbit.com/service_center/notice?id=1234',
-    title: '더미 상장 공지',
+    title: '더미 공지',
     listed_at: '2025-07-18T00:57:01+09:00',
     first_listed_at: '2025-07-17T18:01:37+09:00'
   },
@@ -31,7 +31,7 @@ const sampleData = [
     asset: 'XAI',
     trade_time: '2025-07-20T16:00:00',
     link: 'https://binance.com/announcement/xai',
-    title: '더미 상장 공지',
+    title: 'Binance Notice',
     listed_at: '2025-07-20T16:00:00',
     first_listed_at: '2025-07-20T16:00:00'
   },
@@ -41,7 +41,7 @@ const sampleData = [
     asset: '세럼(SRM)',
     trade_time: '2025-07-18T18:30:00',
     link: 'https://bithumb.com/notice/srm',
-    title: '더미 유의 공지',
+    title: 'Bithumb Notice',
     listed_at: '2025-07-18T18:30:00',
     first_listed_at: '2025-07-18T18:30:00'
   }
@@ -54,14 +54,15 @@ export default function NoticePage() {
   const [grouped, setGrouped] = useState({});
   const [sample, setSample] = useState(sampleData);
 
-  // ✅ 업비트 상장 공지 실시간 fetch
+  // ✅ 업비트 상장 공지만 실시간 fetch해서 sampleData의 업비트 상장 항목에 덮어씀
   useEffect(() => {
     async function fetchNotice() {
       try {
-        const res = await fetch("https://noticebot-production.up.railway.app/latest_notice");
+        const res = await fetch("https://noticebot-production.up.railway.app/latest_notice"); // 도메인 교체
         const data = await res.json();
 
         if (data.assets && Array.isArray(data.assets)) {
+          // 여러 자산이 상장될 경우 모두 리스트화
           const notices = data.assets.map(asset => ({
             exchange: "업비트",
             type: "상장",
@@ -73,6 +74,7 @@ export default function NoticePage() {
             first_listed_at: data.first_listed_at
           }));
 
+          // 기존 샘플에서 업비트 '상장'을 제외 + 실시간 데이터 추가
           const filtered = sampleData.filter(
             n => !(n.exchange === '업비트' && n.type === '상장')
           );
@@ -81,43 +83,13 @@ export default function NoticePage() {
           setSample(sampleData);
         }
       } catch {
-        setSample(sampleData);
+        setSample(sampleData); // 오류시에도 더미 데이터 유지
       }
     }
     fetchNotice();
     const interval = setInterval(fetchNotice, 10000);
     return () => clearInterval(interval);
   }, []);
-
-  // ✅ 업비트 거래 유의 공지 실시간 fetch
-  useEffect(() => {
-    async function fetchNoticeWarn() {
-      try {
-        const res = await fetch("https://noticebot-production.up.railway.app/latest_notice_warn");
-        const data = await res.json();
-
-        if (data && data.title && data.id) {
-          const warnNotice = {
-            exchange: "업비트",
-            type: "유의",
-            asset: "",
-            title: data.title,
-            link: `https://upbit.com/service_center/notice?id=${data.id}`,
-          };
-          // 기존 샘플에서 업비트 유의 제외 + 새 유의 추가
-          const filtered = sample.filter(
-            n => !(n.exchange === '업비트' && n.type === '유의')
-          );
-          setSample([warnNotice, ...filtered]);
-        }
-      } catch {
-        // 실패 시 아무것도 안함(기존 더미 유지)
-      }
-    }
-    fetchNoticeWarn();
-    const interval = setInterval(fetchNoticeWarn, 10000);
-    return () => clearInterval(interval);
-  }, [sample]);
 
   useEffect(() => {
     setGrouped(groupByExchangeAndType(sample));
@@ -184,27 +156,11 @@ export default function NoticePage() {
   );
 }
 
-// ✅ type별 렌더링 분기(유의 공지는 제목+링크만)
+// ✅ 모든 필드 노출(상황에 따라 일부만 표시도 가능)
 function NoticeCard({ notice }) {
-  if (notice.type === "유의") {
-    return (
-      <div className="bg-[#1F2937] rounded-xl p-4 shadow border border-gray-700 hover:shadow-lg transition">
-        <div className="text-md font-bold mb-1">⚠️ {notice.title}</div>
-        <a
-          href={notice.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-400 hover:underline text-sm"
-        >
-          🔗 공지 바로가기
-        </a>
-      </div>
-    );
-  }
-
-  // 상장 공지(기존)
   const remaining = getRemainingTime(notice.trade_time);
   const isStarted = remaining === '이미 시작됨';
+
   return (
     <div className="bg-[#1F2937] rounded-xl p-4 shadow border border-gray-700 hover:shadow-lg transition">
       <div className="text-lg font-bold mb-1">{notice.asset}</div>
@@ -217,6 +173,7 @@ function NoticeCard({ notice }) {
         <div className="text-sm text-gray-400 mb-1">⏳ {remaining}</div>
       )}
       <div className="text-sm text-gray-400 mb-1">📝 {notice.title}</div>
+      {/* 공지등록/최초등록 줄 제거 */}
       <a
         href={notice.link}
         target="_blank"
@@ -229,6 +186,9 @@ function NoticeCard({ notice }) {
   );
 }
 
+
+
+// --- 그룹화 로직 (불변)
 function groupByExchangeAndType(data) {
   const grouped = {};
   for (const item of data) {
@@ -240,6 +200,7 @@ function groupByExchangeAndType(data) {
 
 function formatDate(dateStr) {
   if (!dateStr) return "";
+  // KST, UTC 등 제거 및 파싱
   const parsed = dateStr.replace('KST', '').replace('UTC', '').trim();
   const dt = new Date(parsed);
   if (isNaN(dt)) return dateStr;

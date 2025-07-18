@@ -1,2 +1,10 @@
-kimp/frontend
-    /backend 
+fobit/frontend/app/autobot
+                  /goldentime
+                  /notice
+                  /tradingview
+
+
+
+
+     /backend/kimp_backend
+             /notice_backend
