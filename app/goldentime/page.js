@@ -270,7 +270,7 @@ export default function GoldentimePage() {
         marginBottom: 10,
         textAlign: 'center' // 가운데 정렬 원하면 추가
         }}>
-        거래대금 10위 코인 목록 (상장 6개월 미만 코인 제외)
+        업비트 거래대금 10위 코인 목록 (상장 6개월 미만 코인 제외)
         </div>
 
 
@@ -366,28 +366,32 @@ export default function GoldentimePage() {
             요일별 변동률 데이터를 불러오는 중입니다...
           </p>
         ) : (
-          dayVolatility.length === 7 ? dayVolatility.map((val, idx) => (
-            <div
-              key={idx}
-              style={{
-                flex: 1,
-                textAlign: 'center',
-                padding: '12px 0',
-                borderRadius: 12,
-                border: '1.5px solid #aaa',
-                backgroundColor: idx === 1 ? ACCENT : 'transparent',
-                fontWeight: idx === 1 ? '700' : '400',
-                color: idx === 1 ? '#000' : '#ccc',
-                userSelect: 'text',
-                cursor: 'default',
-                fontSize: 18,
-                lineHeight: 1.1
-              }}
-            >
-              <div>{['일', '월', '화', '수', '목', '금', '토'][idx]}</div>
-              <div style={{ marginTop: 6 }}>{val.toFixed(2)}%</div>
-            </div>
-          )) : <p style={{ color: '#999' }}>요일별 변동률 데이터를 불러오는 중입니다...</p>
+
+          dayVolatility.length === 7 ? (() => {
+            const maxDayIndex = dayVolatility.indexOf(Math.max(...dayVolatility));
+            return dayVolatility.map((val, idx) => (
+              <div
+                key={idx}
+                style={{
+                  flex: 1,
+                  textAlign: 'center',
+                  padding: '12px 0',
+                  borderRadius: 12,
+                  border: '1.5px solid #aaa',
+                  backgroundColor: idx === maxDayIndex ? ACCENT : 'transparent',
+                  fontWeight: idx === maxDayIndex ? '700' : '400',
+                  color: idx === maxDayIndex ? '#000' : '#ccc',
+                  userSelect: 'text',
+                  cursor: 'default',
+                  fontSize: 18,
+                  lineHeight: 1.1
+                }}
+              >
+                <div>{['일', '월', '화', '수', '목', '금', '토'][idx]}</div>
+                <div style={{ marginTop: 6 }}>{val.toFixed(2)}%</div>
+              </div>
+            ));
+          })() : <p style={{ color: '#999' }}>요일별 변동률 데이터를 불러오는 중입니다...</p>
         )}
       </section>
     </main>
