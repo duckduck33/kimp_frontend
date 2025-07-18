@@ -3,6 +3,7 @@
 import NavBar from '../../components/NavBar';
 import { useEffect, useState } from 'react';
 
+// ✅ 더미 데이터(업비트 상장/유의는 실시간 fetch로 덮어씀)
 const sampleData = [
   {
     exchange: '업비트',
@@ -40,7 +41,7 @@ const sampleData = [
     asset: '세럼(SRM)',
     trade_time: '2025-07-18T18:30:00',
     link: 'https://bithumb.com/notice/srm',
-    title: '더미 유의 공지',
+    title: 'Bithumb Notice',
     listed_at: '2025-07-18T18:30:00',
     first_listed_at: '2025-07-18T18:30:00'
   }
@@ -53,6 +54,7 @@ export default function NoticePage() {
   const [grouped, setGrouped] = useState({});
   const [sample, setSample] = useState(sampleData);
 
+  // ✅ 업비트 상장 공지 실시간 fetch
   useEffect(() => {
     async function fetchNotice() {
       try {
@@ -87,6 +89,7 @@ export default function NoticePage() {
     return () => clearInterval(interval);
   }, []);
 
+  // ✅ 업비트 거래 유의 공지 실시간 fetch
   useEffect(() => {
     async function fetchNoticeWarn() {
       try {
@@ -101,12 +104,15 @@ export default function NoticePage() {
             title: data.title,
             link: `https://upbit.com/service_center/notice?id=${data.id}`,
           };
+          // 기존 샘플에서 업비트 유의 제외 + 새 유의 추가
           const filtered = sample.filter(
             n => !(n.exchange === '업비트' && n.type === '유의')
           );
           setSample([warnNotice, ...filtered]);
         }
-      } catch {}
+      } catch {
+        // 실패 시 아무것도 안함(기존 더미 유지)
+      }
     }
     fetchNoticeWarn();
     const interval = setInterval(fetchNoticeWarn, 10000);
@@ -142,6 +148,7 @@ export default function NoticePage() {
                 📌 {exchange}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* ✅ 상장 공지 */}
                 <div>
                   <h3 className="text-md font-semibold text-green-400 mb-3">✅ 상장 공지</h3>
                   {types.상장.length === 0 ? (
@@ -155,6 +162,7 @@ export default function NoticePage() {
                   )}
                 </div>
 
+                {/* ⚠️ 거래 유의 공지 */}
                 <div>
                   <h3 className="text-md font-semibold text-yellow-400 mb-3">⚠️ 거래 유의 공지</h3>
                   {types.유의.length === 0 ? (
@@ -176,6 +184,7 @@ export default function NoticePage() {
   );
 }
 
+// ✅ type별 렌더링 분기(유의 공지는 제목+링크만)
 function NoticeCard({ notice }) {
   if (notice.type === "유의") {
     return (
@@ -193,6 +202,7 @@ function NoticeCard({ notice }) {
     );
   }
 
+  // 상장 공지(기존)
   const remaining = getRemainingTime(notice.trade_time);
   const isStarted = remaining === '이미 시작됨';
   return (
