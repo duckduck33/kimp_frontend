@@ -159,18 +159,21 @@ export default function NoticePage() {
 // ✅ 모든 필드 노출(상황에 따라 일부만 표시도 가능)
 function NoticeCard({ notice }) {
   const remaining = getRemainingTime(notice.trade_time);
+  const isStarted = remaining === '이미 시작됨';
+
   return (
     <div className="bg-[#1F2937] rounded-xl p-4 shadow border border-gray-700 hover:shadow-lg transition">
       <div className="text-lg font-bold mb-1">{notice.asset}</div>
-      <div className="text-sm text-gray-300 mb-1">📅 상장예정: {formatDate(notice.trade_time)}</div>
-      <div className="text-sm text-gray-400 mb-1">⏳ {remaining}</div>
-      <div className="text-sm text-gray-400 mb-1">📝 {notice.title}</div>
-      <div className="text-sm text-gray-500 mb-1">
-        공지등록: {formatDate(notice.listed_at)}
-        {notice.first_listed_at && (
-          <> | 최초등록: {formatDate(notice.first_listed_at)}</>
-        )}
+      <div className="text-sm text-gray-300 mb-1">
+        📅 {isStarted ? '상장' : '상장예정'}: {formatDate(notice.trade_time)}
       </div>
+      {isStarted ? (
+        <div className="text-sm text-red-400 mb-1">⏳ 이미 시작됨</div>
+      ) : (
+        <div className="text-sm text-gray-400 mb-1">⏳ {remaining}</div>
+      )}
+      <div className="text-sm text-gray-400 mb-1">📝 {notice.title}</div>
+      {/* 공지등록/최초등록 줄 제거 */}
       <a
         href={notice.link}
         target="_blank"
@@ -182,6 +185,8 @@ function NoticeCard({ notice }) {
     </div>
   );
 }
+
+
 
 // --- 그룹화 로직 (불변)
 function groupByExchangeAndType(data) {
