@@ -40,7 +40,7 @@ export default function NoticePage() {
     >
       <NavBar />
 
-      <h1 className="text-3xl font-bold text-center mt-10 mb-10">🚨 상장 / 거래 유의 공지 통합</h1>
+      <h1 className="text-3xl font-bold text-center mt-10 mb-10">🚨 거래소별 통합 상장공지 상폐공지 (*현재 샘플이고 개발중임다) </h1>
 
       {Object.keys(grouped).length === 0 ? (
         <p className="text-center text-gray-300">📡 데이터를 불러오는 중입니다...</p>
