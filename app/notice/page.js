@@ -6,22 +6,22 @@ import { useEffect, useState } from 'react';
 // ✅ 더미 데이터 (바이낸스, 빗썸 샘플만 유지)
 const sampleData = [
   {
-    exchange: '바이낸스',
+    exchange: '바이낸스(개발중)',
     type: '상장',
     asset: 'XAI',
     trade_time: '2025-07-20T16:00:00',
     link: 'https://binance.com/announcement/xai',
-    title: '더미 상장 공지 (Binance)',
+    title: '샘플입니다',
     listed_at: '2025-07-20T16:00:00+00:00',
     first_listed_at: '2025-07-20T16:00:00+00:00'
   },
   {
-    exchange: '빗썸',
+    exchange: '빗썸(개발중)',
     type: '유의',
     asset: '세럼(SRM)',
     trade_time: '2025-07-18T18:30:00',
     link: 'https://bithumb.com/notice/srm',
-    title: '더미 유의 공지 (Bithumb)',
+    title: '샘플입니다',
     listed_at: '2025-07-18T18:30:00+09:00',
     first_listed_at: '2025-07-18T18:30:00+09:00'
   }
