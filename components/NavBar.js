@@ -74,7 +74,7 @@ export default function NavBar() {
             rel="noopener noreferrer"
             className="apply-btn"
           >
-            포비트 무료 지표 신청
+            포비트 무료신청
           </a>
         </div>
       </nav>
