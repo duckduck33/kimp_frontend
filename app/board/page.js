@@ -23,6 +23,7 @@ export default function HomePage() {
       >
         <div className="desc-text">
           포비트채널에서 소개한 지표&매매법 게시판입니다.(*자료 유출문제로 칼럼비번은 우측상단의 '포비트무료신청'메뉴에서 통해서 받으실 수 있습니다.)
+          칼럼 비번을 받으신후 https://gongnam.tistory.com/ 링크로 들어오셔서 읽으실수 있습니다.
         </div>
 
         {/* 티스토리 블로그 카테고리 창을 NavBar 아래 남은 영역 가득 채우기 */}
