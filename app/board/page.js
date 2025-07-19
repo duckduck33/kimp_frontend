@@ -25,22 +25,28 @@ export default function HomePage() {
           포비트채널에서 소개한 지표&매매법 게시판입니다.
         </div>
 
-        {/* 티스토리 블로그 카테고리 작은 창 형태로 삽입 (1번 방법: iframe) */}
+        {/* 티스토리 블로그 카테고리 창을 NavBar 아래 남은 영역 가득 채우기 */}
         <div
           style={{
-            width: '320px',
-            height: '480px',
+            flex: 1,
+            position: 'relative',
+            width: '100%',
             border: '1px solid #ddd',
             borderRadius: '4px',
             overflow: 'hidden',
-            marginTop: '20px'
+            marginTop: '20px',
           }}
         >
           <iframe
             src="https://gongnam.tistory.com/category/%EC%A7%80%ED%91%9C%26%EB%A7%A4%EB%A7%A4%EB%B2%95"
-            width="100%"
-            height="100%"
-            frameBorder="0"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              border: 'none',
+            }}
             scrolling="auto"
           />
         </div>
