@@ -22,7 +22,6 @@ export default function HomePage() {
         }}
       >
         <div className="desc-text">
-          포비트채널에서 소개한 지표&매매법 게시판입니다.
           (<span style={{ color: '#47eaff' }}>
             *자료 유출문제로 칼럼비번은 우측상단의 ‘포비트무료신청’메뉴에서 통해서 받으실 수 있습니다.
           </span>)
