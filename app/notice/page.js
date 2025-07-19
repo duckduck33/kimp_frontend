@@ -4,35 +4,34 @@ import NavBar from '../../components/NavBar';
 import { useEffect, useState } from 'react';
 
 // ✅ 더미 데이터 (바이낸스, 빗썸 샘플만 유지)
-// const sampleData = [
-//   {
-//     exchange: '바이낸스',
-//     type: '상장',
-//     asset: 'XAI',
-//     trade_time: '2025-07-20T16:00:00',
-//     link: 'https://binance.com/announcement/xai',
-//     title: '더미 상장 공지 (Binance)',
-//     listed_at: '2025-07-20T16:00:00+00:00',
-//     first_listed_at: '2025-07-20T16:00:00+00:00'
-//   },
-//   {
-//     exchange: '빗썸',
-//     type: '유의',
-//     asset: '세럼(SRM)',
-//     trade_time: '2025-07-18T18:30:00',
-//     link: 'https://bithumb.com/notice/srm',
-//     title: '더미 유의 공지 (Bithumb)',
-//     listed_at: '2025-07-18T18:30:00+09:00',
-//     first_listed_at: '2025-07-18T18:30:00+09:00'
-//   }
-// ];
+const sampleData = [
+  {
+    exchange: '바이낸스',
+    type: '상장',
+    asset: 'XAI',
+    trade_time: '2025-07-20T16:00:00',
+    link: 'https://binance.com/announcement/xai',
+    title: '더미 상장 공지 (Binance)',
+    listed_at: '2025-07-20T16:00:00+00:00',
+    first_listed_at: '2025-07-20T16:00:00+00:00'
+  },
+  {
+    exchange: '빗썸',
+    type: '유의',
+    asset: '세럼(SRM)',
+    trade_time: '2025-07-18T18:30:00',
+    link: 'https://bithumb.com/notice/srm',
+    title: '더미 유의 공지 (Bithumb)',
+    listed_at: '2025-07-18T18:30:00+09:00',
+    first_listed_at: '2025-07-18T18:30:00+09:00'
+  }
+];
 
 export default function NoticePage() {
   const BG = '#101728';
   const TEXT = '#FFFFFF';
 
-  // const [sample, setSample] = useState(sampleData);
-  const [sample, setSample] = useState([]);
+  const [sample, setSample] = useState(sampleData);
   const [grouped, setGrouped] = useState({});
 
   // ✅ 업비트 공지(상장 + 유의) fetch: 하나의 interval로 통합
