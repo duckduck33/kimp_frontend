@@ -3,37 +3,17 @@
 import NavBar from '../../components/NavBar';
 import { useEffect, useState } from 'react';
 
-// ✅ 더미 데이터 (처음 화면용)
+// ✅ 더미 데이터 (바이낸스, 빗썸 샘플만 유지)
 const sampleData = [
-  {
-    exchange: '업비트',
-    type: '상장',
-    asset: '칼데라(ERA)',
-    trade_time: '2025-07-18T01:00:00',
-    link: 'https://upbit.com/service_center/notice?id=1234',
-    title: '더미 상장 공지',
-    listed_at: '2025-07-18T00:57:01+09:00',
-    first_listed_at: '2025-07-17T18:01:37+09:00'
-  },
-  {
-    exchange: '업비트',
-    type: '유의',
-    asset: '루나(LUNA)',
-    trade_time: '2025-07-19T10:00:00',
-    link: 'https://upbit.com/service_center/notice?id=5678',
-    title: '더미 유의 공지',
-    listed_at: '2025-07-19T10:00:00',
-    first_listed_at: '2025-07-19T10:00:00'
-  },
   {
     exchange: '바이낸스',
     type: '상장',
     asset: 'XAI',
     trade_time: '2025-07-20T16:00:00',
     link: 'https://binance.com/announcement/xai',
-    title: '더미 상장 공지',
-    listed_at: '2025-07-20T16:00:00',
-    first_listed_at: '2025-07-20T16:00:00'
+    title: '더미 상장 공지 (Binance)',
+    listed_at: '2025-07-20T16:00:00+00:00',
+    first_listed_at: '2025-07-20T16:00:00+00:00'
   },
   {
     exchange: '빗썸',
@@ -41,9 +21,9 @@ const sampleData = [
     asset: '세럼(SRM)',
     trade_time: '2025-07-18T18:30:00',
     link: 'https://bithumb.com/notice/srm',
-    title: '더미 유의 공지',
-    listed_at: '2025-07-18T18:30:00',
-    first_listed_at: '2025-07-18T18:30:00'
+    title: '더미 유의 공지 (Bithumb)',
+    listed_at: '2025-07-18T18:30:00+09:00',
+    first_listed_at: '2025-07-18T18:30:00+09:00'
   }
 ];
 
@@ -54,100 +34,71 @@ export default function NoticePage() {
   const [sample, setSample] = useState(sampleData);
   const [grouped, setGrouped] = useState({});
 
-  // ✅ 업비트 상장 공지
+  // ✅ 업비트 공지(상장 + 유의) fetch: 하나의 interval로 통합
   useEffect(() => {
-    async function fetchNotice() {
+    async function fetchAll() {
       try {
-        const res = await fetch("https://noticebot-production.up.railway.app/latest_notice");
-        const data = await res.json();
-
-        if (data.assets && Array.isArray(data.assets)) {
-          const notices = data.assets.map(asset => ({
+        // 상장 공지
+        const resList = await fetch("https://noticebot-production.up.railway.app/latest_notice");
+        const listData = await resList.json();
+        let updated = [];
+        if (listData.assets && Array.isArray(listData.assets)) {
+          const notices = listData.assets.map(asset => ({
             exchange: "업비트",
             type: "상장",
             asset: asset.asset,
             trade_time: asset.trade_time,
-            link: `https://upbit.com/service_center/notice?id=${data.id}`,
-            title: data.title,
-            listed_at: data.listed_at,
-            first_listed_at: data.first_listed_at
+            link: `https://upbit.com/service_center/notice?id=${listData.id}`,
+            title: listData.title
           }));
-
-          const filtered = sampleData.filter(n => !(n.exchange === '업비트' && n.type === '상장'));
-          setSample(prev => [...notices, ...prev.filter(n => n.exchange !== '업비트' || n.type !== '상장')]);
+          updated.push(...notices);
         }
-      } catch (err) {
-        console.error("상장 fetch 실패", err);
-      }
-    }
-
-    fetchNotice();
-    const interval = setInterval(fetchNotice, 10000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // ✅ 업비트 거래 유의 공지
-  useEffect(() => {
-    async function fetchNoticeWarn() {
-      try {
-        const res = await fetch("https://noticebot-production.up.railway.app/latest_notice_warn");
-        const data = await res.json();
-
-        if (data && data.title && data.id) {
-          const match = data.title.match(/거래 유의 종목 안내\s*\((.+?)\)/);
-          const asset = match ? match[1] : "";
-
-          const warnNotice = {
+        // 유의 공지
+        const resWarn = await fetch("https://noticebot-production.up.railway.app/latest_notice_warn");
+        const warnData = await resWarn.json();
+        if (warnData && warnData.title && warnData.id) {
+          const match = warnData.title.match(/\(([^)]+)\)/);
+          const assetName = match ? match[1] : '';
+          updated.push({
             exchange: "업비트",
             type: "유의",
-            asset: asset,
-            title: data.title,
-            link: `https://upbit.com/service_center/notice?id=${data.id}`,
-          };
-
-          setSample(prev => [
-            warnNotice,
-            ...prev.filter(n => !(n.exchange === '업비트' && n.type === '유의'))
-          ]);
+            asset: assetName,
+            title: warnData.title,
+            link: `https://upbit.com/service_center/notice?id=${warnData.id}`,
+          });
         }
+        // 샘플(바이낸스/빗썸) + 실시간 업데이트 조합
+        setSample(prev => [
+          ...updated,
+          ...prev.filter(n => n.exchange !== '업비트')
+        ]);
       } catch (err) {
-        console.error("유의 fetch 실패", err);
+        console.error('공지 fetch 실패', err);
       }
     }
 
-    fetchNoticeWarn();
-    const interval = setInterval(fetchNoticeWarn, 10000);
+    // 최초 호출 및 이후 10초 간격으로 고정
+    fetchAll();
+    const interval = setInterval(fetchAll, 10000);
     return () => clearInterval(interval);
   }, []);
 
+  // grouped 갱신
   useEffect(() => {
     setGrouped(groupByExchangeAndType(sample));
   }, [sample]);
 
   return (
-    <main
-      style={{
-        background: BG,
-        minHeight: '100vh',
-        padding: 20,
-        fontFamily: 'Pretendard,sans-serif',
-        color: TEXT,
-        position: 'relative',
-      }}
-    >
+    <main style={{ background: BG, minHeight: '100vh', padding: 20, fontFamily: 'Pretendard,sans-serif', color: TEXT }}>
       <NavBar />
-      <h1 className="text-3xl font-bold text-center mt-10 mb-10">
-        🚨 거래소별 통합 상장공지 상폐공지
-      </h1>
+      <h1 className="text-3xl font-bold text-center mt-10 mb-10">🚨 거래소별 통합 상장공지 상폐공지</h1>
       {Object.keys(grouped).length === 0 ? (
         <p className="text-center text-gray-300">📡 데이터를 불러오는 중입니다...</p>
       ) : (
         <div className="space-y-16 max-w-6xl mx-auto">
           {Object.entries(grouped).map(([exchange, types]) => (
             <div key={exchange}>
-              <h2 className="text-xl font-semibold mb-6 border-b border-gray-700 pb-2">
-                📌 {exchange}
-              </h2>
+              <h2 className="text-xl font-semibold mb-6 border-b border-gray-700 pb-2">📌 {exchange}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* 상장 공지 */}
                 <div>
@@ -156,13 +107,10 @@ export default function NoticePage() {
                     <p className="text-gray-500 text-sm">상장 공지가 없습니다.</p>
                   ) : (
                     <div className="space-y-3">
-                      {types.상장.map((notice, idx) => (
-                        <NoticeCard key={idx} notice={notice} />
-                      ))}
+                      {types.상장.map((notice, idx) => <NoticeCard key={idx} notice={notice} />)}
                     </div>
                   )}
                 </div>
-
                 {/* 거래 유의 공지 */}
                 <div>
                   <h3 className="text-md font-semibold text-yellow-400 mb-3">⚠️ 거래 유의 공지</h3>
@@ -170,9 +118,7 @@ export default function NoticePage() {
                     <p className="text-gray-500 text-sm">거래 유의 공지가 없습니다.</p>
                   ) : (
                     <div className="space-y-3">
-                      {types.유의.map((notice, idx) => (
-                        <NoticeCard key={idx} notice={notice} />
-                      ))}
+                      {types.유의.map((notice, idx) => <NoticeCard key={idx} notice={notice} />)}
                     </div>
                   )}
                 </div>
@@ -191,40 +137,19 @@ function NoticeCard({ notice }) {
       <div className="bg-[#1F2937] rounded-xl p-4 shadow border border-gray-700 hover:shadow-lg transition">
         <div className="text-md font-bold mb-1">⚠️ {notice.asset}</div>
         <div className="text-sm text-gray-400 mb-1">📝 {notice.title}</div>
-        <a
-          href={notice.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-400 hover:underline text-sm"
-        >
-          🔗 공지 바로가기
-        </a>
+        <a href={notice.link} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline text-sm">🔗 공지 바로가기</a>
       </div>
     );
   }
-
   const remaining = getRemainingTime(notice.trade_time);
   const isStarted = remaining === '이미 시작됨';
   return (
     <div className="bg-[#1F2937] rounded-xl p-4 shadow border border-gray-700 hover:shadow-lg transition">
       <div className="text-lg font-bold mb-1">{notice.asset}</div>
-      <div className="text-sm text-gray-300 mb-1">
-        📅 {isStarted ? '상장' : '상장예정'}: {formatDate(notice.trade_time)}
-      </div>
-      {isStarted ? (
-        <div className="text-sm text-red-400 mb-1">⏳ 이미 시작됨</div>
-      ) : (
-        <div className="text-sm text-gray-400 mb-1">⏳ {remaining}</div>
-      )}
+      <div className="text-sm text-gray-300 mb-1">📅 {isStarted ? '상장' : '상장예정'}: {formatDate(notice.trade_time)}</div>
+      {isStarted ? <div className="text-sm text-red-400 mb-1">⏳ 이미 시작됨</div> : <div className="text-sm text-gray-400 mb-1">⏳ {remaining}</div>}
       <div className="text-sm text-gray-400 mb-1">📝 {notice.title}</div>
-      <a
-        href={notice.link}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-400 hover:underline text-sm"
-      >
-        🔗 공지 바로가기
-      </a>
+      <a href={notice.link} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline text-sm">🔗 공지 바로가기</a>
     </div>
   );
 }
