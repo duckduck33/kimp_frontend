@@ -16,7 +16,7 @@ export default function NavBar() {
     { href: "/notice", label: "거래소공지모니터링" },
     { href: "/tradingview", label: "TOP10지표" },
     { href: "/autobot", label: "자동매매" },
-    { href: "/board", label: "지표&매매법" },
+    { href: "/board", label: "지표&매매법칼럼" },
   ];
 
   // NavBar 높이를 측정하여 CSS 변수로 설정
