@@ -69,7 +69,7 @@ export default function NavBar() {
 
           {/* 우측 버튼 */}
           <a
-            href="https://zamtown.com/fobit"
+            href="https://zamtown.com/fobitapp"
             target="_blank"
             rel="noopener noreferrer"
             className="apply-btn"
