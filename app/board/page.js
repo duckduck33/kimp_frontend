@@ -26,7 +26,7 @@ export default function HomePage() {
           marginBottom: 4,
           wordBreak: "keep-all"
         }}>
-          *자료 유출문제로 칼럼비번은 우측상단의 ‘포비트무료신청’ 메뉴에서 받으실 수 있습니다.
+          *자료 유출문제로 칼럼비번은 우측상단의 ‘포비트무료신청’ 메뉴에서 통해서 받아주세요.
         </div>
         <div style={{
           color: "#fff", // 전체 흰색
@@ -48,7 +48,7 @@ export default function HomePage() {
           >
             https://gongnam.tistory.com/
           </a>
-          &nbsp;링크로 들어오셔서 읽으실 수 있습니다.
+          &nbsp;링크로 들어오셔서 보실 수 있습니다.
         </div>
       </div>
 
