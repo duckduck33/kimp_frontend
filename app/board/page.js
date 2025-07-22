@@ -23,10 +23,10 @@ export default function HomePage() {
       >
       <div className="desc-text" style={{ textAlign: "center", lineHeight: 1.8, marginBottom: 20 }}>
         <div style={{ color: '#47eaff', fontWeight: 500 }}>
-          *자료 유출문제로 칼럼비번은 우측상단의 ‘포비트무료신청’ 메뉴에서만 받으실 수 있습니다.
-          <br />
+          *자료 유출문제로 칼럼비번은 우측상단의 ‘포비트무료신청’ 메뉴에서 받으실 수 있습니다.
         </div>
-        <div style={{ marginTop: 6, color: "#fff", fontWeight: 600 }}>
+        <div style={{ height: 4 }} /> {/* 여백용, 없어도 됨 */}
+        <div style={{ color: "#fff", fontWeight: 600 }}>
           칼럼 비번을 받으신 후&nbsp;
           <a
             href="https://gongnam.tistory.com/"
@@ -39,6 +39,7 @@ export default function HomePage() {
           &nbsp;링크로 들어오셔서 읽으실 수 있습니다.
         </div>
       </div>
+
 
 
         {/* 티스토리 블로그 카테고리 창을 NavBar 아래 남은 영역 가득 채우기 */}
