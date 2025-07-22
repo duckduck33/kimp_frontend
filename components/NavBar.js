@@ -42,7 +42,7 @@ export default function NavBar() {
   // GA4 버튼 클릭 이벤트 함수
   const handleApplyBtnClick = () => {
     if (typeof window !== "undefined" && window.gtag) {
-      window.gtag('event', '포비트 무료신청 버튼', {
+      window.gtag('event', 'fobit_button', {
         event_category: 'button',
         event_label: '포비트 무료신청',
       });
