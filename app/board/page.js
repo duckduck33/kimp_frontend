@@ -8,41 +8,39 @@ export default function HomePage() {
       <NavBar />
       <div
         style={{
-          height: 'calc(100vh - 64px)', // NavBar 높이만큼 빼기
+          height: 'calc(100vh - 64px)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          fontSize: '2rem',
-          fontWeight: 'bold',
-          color: '#fff',
           backgroundColor: '#101728',
           fontFamily: 'Pretendard, sans-serif',
           padding: '20px',
         }}
       >
-      <div className="desc-text" style={{ textAlign: "center", lineHeight: 1.8, marginBottom: 20 }}>
-        <div style={{ color: '#47eaff', fontWeight: 500 }}>
-          *자료 유출문제로 칼럼비번은 우측상단의 ‘포비트무료신청’ 메뉴에서 받으실 수 있습니다.
+        {/* 💡 desc-text만 별도 블록! */}
+        <div style={{ width: "100%", maxWidth: 800 }}>
+          <div className="desc-text" style={{ textAlign: "center", lineHeight: 1.8, marginBottom: 20 }}>
+            <div style={{ color: '#47eaff', fontWeight: 500 }}>
+              *자료 유출문제로 칼럼비번은 우측상단의 ‘포비트무료신청’ 메뉴에서 받으실 수 있습니다.
+            </div>
+            <div style={{ height: 4 }} /> {/* 여백용, 필요시 조절 */}
+            <div style={{ color: "#fff", fontWeight: 600 }}>
+              칼럼 비번을 받으신 후&nbsp;
+              <a
+                href="https://gongnam.tistory.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "#7bdfff", textDecoration: "underline", fontWeight: "bold" }}
+              >
+                https://gongnam.tistory.com/
+              </a>
+              &nbsp;링크로 들어오셔서 읽으실 수 있습니다.
+            </div>
+          </div>
         </div>
-        <div style={{ height: 4 }} /> {/* 여백용, 없어도 됨 */}
-        <div style={{ color: "#fff", fontWeight: 600 }}>
-          칼럼 비번을 받으신 후&nbsp;
-          <a
-            href="https://gongnam.tistory.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: "#7bdfff", textDecoration: "underline", fontWeight: "bold" }}
-          >
-            https://gongnam.tistory.com/
-          </a>
-          &nbsp;링크로 들어오셔서 읽으실 수 있습니다.
-        </div>
-      </div>
 
-
-
-        {/* 티스토리 블로그 카테고리 창을 NavBar 아래 남은 영역 가득 채우기 */}
+        {/* 아래는 그대로 */}
         <div
           style={{
             flex: 1,
@@ -52,7 +50,7 @@ export default function HomePage() {
             borderRadius: '4px',
             overflow: 'hidden',
             marginTop: '20px',
-            background: '#fff', // 부모도 흰색!
+            background: '#fff',
           }}
         >
           <iframe
@@ -64,7 +62,7 @@ export default function HomePage() {
               width: '100%',
               height: '100%',
               border: 'none',
-              background: '#fff', // 이 부분도 혹시 몰라 추가
+              background: '#fff',
             }}
             scrolling="auto"
             title="티스토리게시판"
