@@ -20,7 +20,7 @@ export default function HomePage() {
         }}
       >
       <div className="desc-text">
-        포비트가 직접 개발한 수익률 TOP10 지표를 업로드할 예정입니다. 
+        포비트가 직접 개발한 수익률 TOP10 지표는 우측상단 '포비트 무료신청' 메뉴에서 신청할 수 있습니다.
       </div>
 
       </div>
