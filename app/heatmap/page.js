@@ -29,7 +29,7 @@ export default function HeatmapPage() {
             flex: 1, 
             height: '500px', 
             // 2. 하단 여백 20px 추가 및 box-sizing 설정
-            paddingBottom: '20px',
+            paddingBottom: '50px',
             boxSizing: 'border-box' 
           }}>
             {selectedSymbol && <TradingViewChart key={selectedSymbol} symbol={selectedSymbol} />}
