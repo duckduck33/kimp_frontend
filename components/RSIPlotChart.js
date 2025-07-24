@@ -2,43 +2,52 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { ResponsiveContainer, ScatterChart, XAxis, YAxis, Tooltip, ReferenceArea, Scatter, Cell, LabelList, CartesianGrid } from 'recharts';
+import { calculateRSI } from '@/utils/calculations'; // RSI 계산 함수는 그대로 사용합니다.
 
 // RSI 값에 따라 점 색상을 반환하는 함수
 const getDotColor = (rsi) => {
-  if (rsi >= 60) return '#f87171'; // 밝은 빨강
-  if (rsi < 40) return '#4ade80';  // 밝은 녹색
-  return '#9ca3af';               // 회색
+  if (rsi >= 60) return '#f87171';
+  if (rsi < 40) return '#4ade80';
+  return '#9ca3af';
 };
 
-// 툴팁 컴포넌트가 자체적으로 상세 데이터를 불러오도록 수정
+// 툴팁 컴포넌트
 const CustomTooltip = ({ active, payload }) => {
   const [details, setDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // active (마우스 호버) 상태가 변경될 때마다 실행
   useEffect(() => {
-    // 툴팁이 활성화되고, 데이터가 있으면 상세 정보 API 호출
     if (active && payload && payload.length) {
-      setIsLoading(true);
       const symbol = payload[0].payload.symbol;
-      fetch(`/api/rsi-details?symbol=${symbol}`)
-        .then(res => {
-            if (!res.ok) {
-                throw new Error('Failed to fetch details');
-            }
-            return res.json();
-        })
-        .then(data => {
-          setDetails(data);
+      setIsLoading(true);
+      
+      const ALL_TIMEFRAMES = { '5m': '5', '15m': '15', '1h': '60', '4h': '240', '1d': 'D' };
+      const requests = Object.entries(ALL_TIMEFRAMES).map(([display, interval]) =>
+        fetch(`https://api.bybit.com/v5/market/kline?category=linear&symbol=${symbol}&interval=${interval}&limit=100`)
+          .then(res => res.json())
+          .then(data => {
+            const rsi = (data.retCode === 0 && data.result.list?.length > 0)
+              ? calculateRSI(data.result.list.map(k => parseFloat(k[4])).reverse())
+              : null;
+            return { key: `rsi_${display}`, value: rsi };
+          })
+      );
+
+      Promise.all(requests)
+        .then(results => {
+          const rsiDetails = results.reduce((acc, curr) => {
+            acc[curr.key] = curr.value;
+            return acc;
+          }, {});
+          setDetails(rsiDetails);
           setIsLoading(false);
         })
         .catch(err => {
-            console.error(err);
-            setIsLoading(false);
-            setDetails(null); // 에러 발생 시 details 초기화
+          console.error(err);
+          setIsLoading(false);
         });
     }
-  }, [active, payload]); 
+  }, [active, payload]);
 
   if (active && payload && payload.length) {
     const data = payload[0].payload;
@@ -71,28 +80,46 @@ export default function RSIPlotChart() {
 
   useEffect(() => {
     setIsLoading(true);
-    fetch(`/api/rsi-heatmap?timeframe=${selectedTimeframe}`)
-      .then((res) => {
-          if (!res.ok) {
-              throw new Error('Failed to fetch heatmap data');
-          }
-          return res.json()
+
+    // 1. 거래대금 상위 30개 코인 목록을 바이비트에서 직접 가져오기
+    fetch('https://api.bybit.com/v5/market/tickers?category=linear')
+      .then(res => res.json())
+      .then(tickerData => {
+        if (tickerData.retCode !== 0) throw new Error('Failed to fetch tickers');
+        
+        const topTickers = tickerData.result.list
+          .sort((a, b) => parseFloat(b.turnover24h) - parseFloat(a.turnover24h))
+          .slice(0, 30);
+        
+        const bybitInterval = { '5m': '5', '15m': '15', '1h': '60', '4h': '240', '1d': 'D' }[selectedTimeframe];
+        
+        // 2. 각 코인의 RSI 값을 바이비트에서 직접 가져오기
+        const requests = topTickers.map(ticker => 
+          fetch(`https://api.bybit.com/v5/market/kline?category=linear&symbol=${ticker.symbol}&interval=${bybitInterval}&limit=100`)
+            .then(res => res.json())
+            .then(klineData => {
+              const rsi = (klineData.retCode === 0 && klineData.result.list?.length > 0)
+                ? calculateRSI(klineData.result.list.map(k => parseFloat(k[4])).reverse())
+                : null;
+              return { symbol: ticker.symbol, price: parseFloat(ticker.lastPrice), rsi: rsi };
+            })
+        );
+        return Promise.all(requests);
       })
-      .then((data) => {
-        // RSI 값이 없는 데이터는 차트에서 제외
-        const filteredData = data.filter(item => item.rsi !== null);
-        setChartData(filteredData);
+      .then(results => {
+        setChartData(results.filter(item => item.rsi !== null));
         setIsLoading(false);
       })
       .catch(error => {
-        console.error(error);
+        console.error("Failed to fetch data from Bybit:", error);
         setIsLoading(false);
       });
   }, [selectedTimeframe]);
 
   return (
+    // ... JSX 부분은 이전과 동일하게 유지 ...
     <div>
-      <div style={{ marginBottom: '20px' }}>
+       <div style={{ marginBottom: '20px' }}>
         <select value={selectedTimeframe} onChange={(e) => setSelectedTimeframe(e.target.value)} style={{ padding: '8px 12px', fontSize: '1rem', backgroundColor: '#1f2937', color: 'white', border: '1px solid #4b5563', borderRadius: '6px' }}>
           {TIMEFRAME_OPTIONS.map(time => (<option key={time} value={time}>{time}</option>))}
         </select>
