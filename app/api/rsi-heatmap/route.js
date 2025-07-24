@@ -1,13 +1,10 @@
 import { NextResponse } from 'next/server';
 import { calculateRSI } from '@/utils/calculations';
 
-// 모든 시간대를 정의
-const ALL_TIMEFRAMES = {
-  '5m': '5', '15m': '15', '1h': '60', '4h': '240', '1d': 'D'
-};
+const BYBIT_TIMEFRAMES = { '5m': '5', '15m': '15', '1h': '60', '4h': '240', '1d': 'D' };
 
-async function getTopSymbols() {
-  // 거래대금 상위 30개 종목을 가져오는 로직 (이전과 동일)
+// getTop30Symbols 함수를 GET 핸들러 위에 한 번만 정의합니다.
+async function getTop30Symbols() {
   try {
     const response = await fetch('https://api.bybit.com/v5/market/tickers?category=linear');
     const data = await response.json();
@@ -23,38 +20,30 @@ async function getTopSymbols() {
 
 export async function GET(request) {
   try {
-    const topTickers = await getTopSymbols();
-    if (topTickers.length === 0) {
-      return NextResponse.json({ error: 'Could not retrieve top symbols.' }, { status: 500 });
-    }
+    const { searchParams } = new URL(request.url);
+    const selectedTimeframe = searchParams.get('timeframe') || '15m';
+    const bybitInterval = BYBIT_TIMEFRAMES[selectedTimeframe];
+    if (!bybitInterval) return NextResponse.json({ error: 'Invalid timeframe' }, { status: 400 });
 
+    const topTickers = await getTop30Symbols(); // Ticker 정보에는 가격이 포함되어 있음
     const results = await Promise.all(
       topTickers.map(async (ticker) => {
-        const rsiData = {};
-        // 각 코인에 대해 모든 시간봉의 RSI를 계산
-        for (const [display, interval] of Object.entries(ALL_TIMEFRAMES)) {
-          const res = await fetch(`https://api.bybit.com/v5/market/kline?category=linear&symbol=${ticker.symbol}&interval=${interval}&limit=100`);
-          const klineData = await res.json();
-          if (klineData.retCode === 0 && klineData.result.list.length > 0) {
-            const closePrices = klineData.result.list.map(k => parseFloat(k[4])).reverse();
-            rsiData[`rsi_${display}`] = calculateRSI(closePrices);
-          } else {
-            rsiData[`rsi_${display}`] = null;
-          }
-        }
-
-        // 최종 데이터 구조: 심볼, 현재가, 모든 시간봉의 RSI
+        const res = await fetch(`https://api.bybit.com/v5/market/kline?category=linear&symbol=${ticker.symbol}&interval=${bybitInterval}&limit=100`);
+        const klineData = await res.json();
+        const rsi = (klineData.retCode === 0 && klineData.result.list.length > 0)
+          ? calculateRSI(klineData.result.list.map(k => parseFloat(k[4])).reverse())
+          : null;
+        
         return {
           symbol: ticker.symbol,
           price: parseFloat(ticker.lastPrice),
-          ...rsiData
+          rsi: rsi
         };
       })
     );
-
     return NextResponse.json(results);
   } catch (error) {
     console.error('API Error:', error);
-    return NextResponse.json({ error: 'FailedS to fetch data' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
   }
 }

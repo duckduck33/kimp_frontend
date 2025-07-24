@@ -3,57 +3,25 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ResponsiveContainer, ScatterChart, XAxis, YAxis, Tooltip, ReferenceArea, Scatter, Cell, LabelList, CartesianGrid } from 'recharts';
 
-// RSI 값에 따라 점 색상을 반환하는 함수
+// 1. 새로운 RSI 기준에 맞춰 점 색상을 반환하는 함수
 const getDotColor = (rsi) => {
   if (rsi >= 60) return '#f87171'; // 밝은 빨강
   if (rsi < 40) return '#4ade80';  // 밝은 녹색
   return '#9ca3af';               // 회색
 };
 
-// 툴팁 컴포넌트가 자체적으로 상세 데이터를 불러오도록 수정
+// 커스텀 툴팁 (이전과 동일)
 const CustomTooltip = ({ active, payload }) => {
-  const [details, setDetails] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // active (마우스 호버) 상태가 변경될 때마다 실행
-  useEffect(() => {
-    // 툴팁이 활성화되고, 데이터가 있으면 상세 정보 API 호출
-    if (active && payload && payload.length) {
-      setIsLoading(true);
-      const symbol = payload[0].payload.symbol;
-      fetch(`/api/rsi-details?symbol=${symbol}`)
-        .then(res => {
-            if (!res.ok) {
-                throw new Error('Failed to fetch details');
-            }
-            return res.json();
-        })
-        .then(data => {
-          setDetails(data);
-          setIsLoading(false);
-        })
-        .catch(err => {
-            console.error(err);
-            setIsLoading(false);
-            setDetails(null); // 에러 발생 시 details 초기화
-        });
-    }
-  }, [active, payload]); 
-
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
       <div style={{ background: 'rgba(0, 0, 0, 0.8)', color: '#fff', padding: '12px', borderRadius: '8px', border: '1px solid #555', width: '200px' }}>
         <h3 style={{ margin: '0 0 10px 0', fontSize: '1.1rem' }}>{data.symbol}</h3>
-        {isLoading || !details ? <p>Loading details...</p> : (
-          <>
-            <p style={{ margin: '4px 0' }}>RSI (5분): {details.rsi_5m ?? 'N/A'}</p>
-            <p style={{ margin: '4px 0' }}>RSI (15분): {details.rsi_15m ?? 'N/A'}</p>
-            <p style={{ margin: '4px 0' }}>RSI (1시간): {details.rsi_1h ?? 'N/A'}</p>
-            <p style={{ margin: '4px 0' }}>RSI (4시간): {details.rsi_4h ?? 'N/A'}</p>
-            <p style={{ margin: '4px 0' }}>RSI (1일): {details.rsi_1d ?? 'N/A'}</p>
-          </>
-        )}
+        <p style={{ margin: '4px 0' }}>RSI (5분): {data.rsi_5m ?? 'N/A'}</p>
+        <p style={{ margin: '4px 0' }}>RSI (15분): {data.rsi_15m ?? 'N/A'}</p>
+        <p style={{ margin: '4px 0' }}>RSI (1시간): {data.rsi_1h ?? 'N/A'}</p>
+        <p style={{ margin: '4px 0' }}>RSI (4시간): {data.rsi_4h ?? 'N/A'}</p>
+        <p style={{ margin: '4px 0' }}>RSI (1일): {data.rsi_1d ?? 'N/A'}</p>
         <hr style={{ border: '1px solid #444', margin: '10px 0' }} />
         <p style={{ margin: '4px 0' }}>가격: ${data.price}</p>
       </div>
@@ -65,30 +33,32 @@ const CustomTooltip = ({ active, payload }) => {
 const TIMEFRAME_OPTIONS = ['5m', '15m', '1h', '4h', '1d'];
 
 export default function RSIPlotChart() {
-  const [chartData, setChartData] = useState([]);
+  const [allData, setAllData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTimeframe, setSelectedTimeframe] = useState('15m');
 
   useEffect(() => {
     setIsLoading(true);
-    fetch(`/api/rsi-heatmap?timeframe=${selectedTimeframe}`)
-      .then((res) => {
-          if (!res.ok) {
-              throw new Error('Failed to fetch heatmap data');
-          }
-          return res.json()
-      })
+    fetch('/api/rsi-heatmap')
+      .then((res) => res.json())
       .then((data) => {
-        // RSI 값이 없는 데이터는 차트에서 제외
-        const filteredData = data.filter(item => item.rsi !== null);
-        setChartData(filteredData);
+        setAllData(data);
         setIsLoading(false);
       })
       .catch(error => {
-        console.error(error);
+        console.error("Failed to fetch chart data:", error);
         setIsLoading(false);
       });
-  }, [selectedTimeframe]);
+  }, []);
+
+  const chartData = useMemo(() => {
+    return allData
+      .map(item => ({
+        ...item,
+        rsi: item[`rsi_${selectedTimeframe}`],
+      }))
+      .filter(item => item.rsi !== null);
+  }, [allData, selectedTimeframe]);
 
   return (
     <div>
@@ -100,11 +70,14 @@ export default function RSIPlotChart() {
       <ResponsiveContainer width="100%" height={600}>
         {isLoading ? <div style={{ color: 'white', textAlign: 'center', paddingTop: '100px' }}>Loading Chart...</div> : (
           <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+            {/* 1. 새로운 영역 기준에 맞춰 배경 수정 */}
             <ReferenceArea y1={60} y2={100} fill="#dc2626" fillOpacity={0.2} label={{ value: '과매수', position: 'insideTopRight', fill: 'rgba(255, 255, 255, 0.7)', fontSize: 14 }} />
             <ReferenceArea y1={40} y2={60} fill="#6b7280" fillOpacity={0.2} label={{ value: '중립', position: 'insideRight', fill: 'rgba(255, 255, 255, 0.7)', fontSize: 14 }} />
             <ReferenceArea y1={0} y2={40} fill="#16a34a" fillOpacity={0.2} label={{ value: '과매도', position: 'insideBottomRight', fill: 'rgba(255, 255, 255, 0.7)', fontSize: 14 }} />
             <CartesianGrid stroke="#555" strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="symbol" type="category" axisLine={false} tick={false} />
+            
+            {/* 1. Y축 눈금을 10단위로 수정 */}
             <YAxis 
               dataKey="rsi" 
               type="number" 
@@ -112,9 +85,10 @@ export default function RSIPlotChart() {
               ticks={[10, 20, 30, 40, 50, 60, 70, 80, 90]} 
               tick={{ fill: 'rgba(255, 255, 255, 0.7)' }} 
             />
+
             <Tooltip content={<CustomTooltip />} cursor={{ strokeDasharray: '3 3' }} />
             <Scatter name="RSI" data={chartData}>
-              <LabelList dataKey="symbol" position="top" style={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }} />
+              <LabelList dataKey="symbol" position="top" style={{ fill: 'rgba(255,255,255,0.6)', fontSize: 15 }} />
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={getDotColor(entry.rsi)} />
               ))}
