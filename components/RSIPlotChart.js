@@ -4,8 +4,8 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ResponsiveContainer, ScatterChart, XAxis, YAxis, Tooltip, ReferenceArea, Scatter, Cell, LabelList, CartesianGrid } from 'recharts';
 import { calculateRSI } from '@/utils/calculations';
 
-const PULLBACK_THRESHOLD = 3;
-const REBOUND_THRESHOLD = -3;
+const PULLBACK_THRESHOLD = 30;
+const REBOUND_THRESHOLD = -30;
 
 const getDotColor = (rsi) => {
   if (rsi >= 60) return '#f87171';
