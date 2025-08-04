@@ -6,9 +6,15 @@ import ProfitMonitor from '@/components/tv_auto/ProfitMonitor';
 
 export default function TvAutoPage() {
   const [closedPositionInfo, setClosedPositionInfo] = useState(null);
+  const [hasActivePosition, setHasActivePosition] = useState(false);
 
   const handlePositionClose = (info) => {
     setClosedPositionInfo(info);
+    setHasActivePosition(false);  // 포지션 종료 시 모니터링 중지
+  };
+
+  const handlePositionEnter = () => {
+    setHasActivePosition(true);  // 포지션 진입 시 모니터링 시작
   };
 
   return (
@@ -18,8 +24,14 @@ export default function TvAutoPage() {
       </h1>
       
       <div className="grid gap-8 md:grid-cols-2">
-        <SettingsForm onPositionClose={handlePositionClose} />
-        <ProfitMonitor closedPositionInfo={closedPositionInfo} />
+        <SettingsForm 
+          onPositionClose={handlePositionClose}
+          onPositionEnter={handlePositionEnter}
+        />
+        <ProfitMonitor 
+          closedPositionInfo={closedPositionInfo}
+          hasActivePosition={hasActivePosition}
+        />
       </div>
     </main>
   );
