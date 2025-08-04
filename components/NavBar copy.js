@@ -2,18 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react"; // useEffect 추가
+import { useState, useEffect } from "react";
 
 export default function NavBar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [navHeight, setNavHeight] = useState(0); // navHeight 상태 추가
+  const [navHeight, setNavHeight] = useState(0);
 
   // 메뉴 링크 정보
   const links = [
     { href: "/", label: "실시간김프" },
     { href: "/goldentime", label: "골든타임 모니터링" },
     { href: "/notice", label: "거래소공지모니터링" },
+    { href: "/heatmap", label: "RSI히트맵" },
     { href: "/tradingview", label: "TOP10지표" },
     { href: "/autobot", label: "자동매매" },
     { href: "/board", label: "지표&매매법칼럼" },
@@ -28,32 +29,37 @@ export default function NavBar() {
     }
   }, []);
 
-
   // 페이지 상단 패딩을 동적으로 설정
   useEffect(() => {
     const mainElement = document.querySelector('main');
     if (mainElement) {
       const navHeight = getComputedStyle(document.documentElement).getPropertyValue('--nav-height');
       if (navHeight) {
-        mainElement.style.paddingTop = `calc(${navHeight} + 20px)`; // 기본 패딩 20px 유지
+        mainElement.style.paddingTop = `calc(${navHeight} + 20px)`;
       }
     }
   }, []);
 
-
-
+  // GA4 버튼 클릭 이벤트 함수
+  const handleApplyBtnClick = () => {
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag('event', 'fobit_button', {
+        event_category: 'button',
+        event_label: '포비트 무료신청',
+      });
+    }
+  };
 
   return (
     <>
       <nav className="navbar">
-        {/* PC/모바일: 로고 + 메뉴 + 버튼 */}
         <div className="navbar-inner">
           {/* 모바일 햄버거 */}
           <div className="nav-hamburger" onClick={() => setMenuOpen((v) => !v)}>
             <span>☰</span>
           </div>
 
-          {/* 좌측 내비 메뉴(PC), 햄버거 메뉴 클릭 시(모바일) */}
+          {/* 메뉴(PC/모바일) */}
           <div className={`nav-links${menuOpen ? " open" : ""}`}>
             {links.map(({ href, label }) => (
               <Link
@@ -67,12 +73,13 @@ export default function NavBar() {
             ))}
           </div>
 
-          {/* 우측 버튼 */}
+          {/* 포비트 무료신청 버튼 */}
           <a
             href="https://zamtown.com/fobitapp"
             target="_blank"
             rel="noopener noreferrer"
             className="apply-btn"
+            onClick={handleApplyBtnClick}
           >
             포비트 무료신청
           </a>
@@ -97,7 +104,7 @@ export default function NavBar() {
           background: #181f2b;
           box-shadow: 0 2px 8px rgba(0,0,0,0.15);
           width: 100%;
-          height: var(--nav-height, 70px); /* 동적으로 계산된 높이 사용, 기본값 70px */
+          height: var(--nav-height, 70px);
         }
         .navbar-inner {
           display: flex; align-items: center; justify-content: space-between;
@@ -148,8 +155,6 @@ export default function NavBar() {
           z-index: 1000;
           font-size: 1.06rem;
         }
-
-        /* ---- 모바일 반응형 ---- */
         @media (max-width: 900px) {
           .navbar-inner {
             padding: 10px 10px;
@@ -160,7 +165,7 @@ export default function NavBar() {
           .nav-links {
             display: none;
             position: absolute;
-            left: 0; right: 0; top: var(--nav-height, 60px); /* 모바일 메뉴도 동적 높이 사용 */
+            left: 0; right: 0; top: var(--nav-height, 60px);
             flex-direction: column;
             background: #181f2b;
             box-shadow: 0 6px 16px rgba(0,0,0,0.15);

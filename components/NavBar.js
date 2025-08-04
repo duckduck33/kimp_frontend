@@ -42,6 +42,17 @@ export default function NavBar() {
 
   // GA4 버튼 클릭 이벤트 함수
   const handleApplyBtnClick = () => {
+    // 랜덤 링크 선택
+    const links = [
+      "https://zamtown.com/ss",
+      "https://zamtown.com/fobitapp"
+    ];
+    const randomLink = links[Math.floor(Math.random() * links.length)];
+    
+    // 새 창에서 링크 열기
+    window.open(randomLink, '_blank', 'noopener,noreferrer');
+    
+    // GA4 이벤트 추적
     if (typeof window !== "undefined" && window.gtag) {
       window.gtag('event', 'fobit_button', {
         event_category: 'button',
@@ -74,15 +85,12 @@ export default function NavBar() {
           </div>
 
           {/* 포비트 무료신청 버튼 */}
-          <a
-            href="https://zamtown.com/fobitapp"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
             className="apply-btn"
             onClick={handleApplyBtnClick}
           >
             포비트 무료신청
-          </a>
+          </button>
         </div>
       </nav>
 
