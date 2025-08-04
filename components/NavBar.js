@@ -16,7 +16,8 @@ export default function NavBar() {
     { href: "/notice", label: "거래소공지모니터링" },
     { href: "/heatmap", label: "RSI히트맵" },
     { href: "/tradingview", label: "TOP10지표" },
-    { href: "/autobot", label: "자동매매" },
+    { href: "/tv_auto", label: "트레이딩뷰 자동매매" },
+    { href: "/autobot", label: "골든타임 자동매매" },
     { href: "/board", label: "지표&매매법칼럼" },
   ];
 
