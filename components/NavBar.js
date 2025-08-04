@@ -44,6 +44,7 @@ export default function NavBar() {
   const handleApplyBtnClick = () => {
     // 랜덤 링크 선택
     const links = [
+      "https://zamtown.com/fobitapp",
       "https://zamtown.com/ss",
       "https://zamtown.com/fobitapp"
     ];
