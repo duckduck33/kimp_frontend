@@ -42,7 +42,7 @@ export default function NavBar() {
 
   // GA4 버튼 클릭 이벤트 함수
   const handleApplyBtnClick = () => {
-    // 랜덤 링크 선택
+    // 랜덤 링크선택
     const links = [
       "https://zamtown.com/fobitapp",
       "https://zamtown.com/ss"
