@@ -48,14 +48,18 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
 
     const fetchProfitData = async () => {
       try {
-        // 포지션이 없으면 수익률 조회하지 않음
-        if (!hasActivePosition || !currentSymbol) {
-          return;
-        }
-
-        const response = await fetch(`${BACKEND_URL}/api/profit/${currentSymbol}`);
+        // 현재 티커가 없으면 기본값 사용
+        const symbol = currentSymbol || 'XRP-USDT';
+        
+        const response = await fetch(`${BACKEND_URL}/api/profit/${symbol}`);
         
         if (!response.ok) {
+          if (response.status === 404) {
+            // 포지션이 없는 경우
+            setProfitData(null);
+            setChartData([]);
+            return;
+          }
           console.error('수익률 조회 실패:', response.status);
           return;
         }
@@ -79,23 +83,19 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
       }
     };
 
-    // 포지션이 있을 때만 모니터링 시작
-    if (hasActivePosition && currentSymbol) {
-      fetchProfitData();  // 초기 데이터 로드
-      intervalId = setInterval(fetchProfitData, 5000);  // 5초마다 업데이트
-    } else {
-      setProfitData(null);
-      setChartData([]);
-    }
+    // 항상 모니터링 시작 (포지션 상태와 관계없이)
+    fetchProfitData();  // 초기 데이터 로드
+    intervalId = setInterval(fetchProfitData, 5000);  // 5초마다 업데이트
 
     return () => {
       if (intervalId) {
         clearInterval(intervalId);
       }
     };
-  }, [hasActivePosition, currentSymbol]);
+  }, [currentSymbol]);
 
-  if (!hasActivePosition) {
+  // 수익률 데이터가 없으면 포지션 없음 표시
+  if (!profitData) {
     return (
       <Card title="수익률 모니터링">
         <div className="text-center text-gray-400 py-4">
