@@ -307,7 +307,19 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
   };
 
   return (
-    <Card title="트레이딩뷰 자동매매 설정">
+    <Card title={
+      <div className="flex items-center justify-between">
+        <span>빙엑스 트레이딩뷰 자동매매 설정</span>
+        <a
+          href="https://bingx.com/invite/ISUIKEF6/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+        >
+          빙엑스 거래소 바로가기
+        </a>
+      </div>
+    }>
       <div className="space-y-4">
         {/* 서버 상태 표시 */}
         <div className={`p-3 rounded-lg text-sm ${
