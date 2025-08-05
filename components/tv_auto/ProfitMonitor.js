@@ -1,20 +1,40 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Card from '../common/Card';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import React, { useState, useEffect } from 'react';
+import { Card } from '../common/Card';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-            // 백엔드 서버 주소 설정
-            const BACKEND_URL = 'https://146.56.98.210:443';
+// 하드코딩된 심볼을 상수로 통합관리
+const HARDCODED_SYMBOL = 'XRP-USDT';
+const BACKEND_URL = 'https://146.56.98.210:443';
 
 export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, onPositionEnter, onPositionClose }) {
   const [profitData, setProfitData] = useState(null);
   const [chartData, setChartData] = useState([]);
-  const [currentSymbol, setCurrentSymbol] = useState('XRP-USDT');
+  const [currentSymbol, setCurrentSymbol] = useState(HARDCODED_SYMBOL);
   const [previousHasActivePosition, setPreviousHasActivePosition] = useState(false);
   const [notification, setNotification] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [todayProfit, setTodayProfit] = useState(null);
+
+  // 오늘의 수익금 업데이트 함수
+  const updateTodayProfit = () => {
+    const today = new Date();
+    const dateKey = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+    
+    // localStorage에서 저장된 데이터 불러오기
+    const savedCalendarData = localStorage.getItem('profitCalendarData');
+    let existingData = savedCalendarData ? JSON.parse(savedCalendarData) : {};
+    
+    // 오늘의 수익금을 실시간으로 업데이트 (100~600 랜덤)
+    const newProfit = Math.floor(Math.random() * 500) + 100;
+    existingData[dateKey] = newProfit;
+    setTodayProfit(newProfit);
+    
+    // localStorage에 저장
+    localStorage.setItem('profitCalendarData', JSON.stringify(existingData));
+  };
 
   // 캘린더 데이터 생성
   const generateCalendarData = () => {
@@ -23,6 +43,10 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
     const currentYear = today.getFullYear();
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    
+    // localStorage에서 저장된 캘린더 데이터 불러오기
+    const savedCalendarData = localStorage.getItem('profitCalendarData');
+    let existingData = savedCalendarData ? JSON.parse(savedCalendarData) : {};
     
     const calendarData = [];
     let dayCount = 1;
@@ -39,13 +63,28 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
           week.push({ day: '', profit: null });
         } else {
           // 이번 달의 날짜
-          const profit = Math.floor(Math.random() * 500) + 100; // 100~600 랜덤 수익금
-          week.push({ day: dayCount, profit: profit });
+          const dateKey = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${dayCount.toString().padStart(2, '0')}`;
+          const isToday = dayCount === today.getDate();
+          
+          let profit;
+          if (existingData[dateKey]) {
+            // 저장된 데이터가 있으면 사용
+            profit = existingData[dateKey];
+          } else {
+            // 새로운 날짜면 랜덤 생성
+            profit = Math.floor(Math.random() * 500) + 100; // 100~600 랜덤 수익금
+            existingData[dateKey] = profit;
+          }
+          
+          week.push({ day: dayCount, profit: profit, isToday: isToday });
           dayCount++;
         }
       }
       calendarData.push(week);
     }
+    
+    // localStorage에 데이터 저장
+    localStorage.setItem('profitCalendarData', JSON.stringify(existingData));
     
     return calendarData;
   };
@@ -116,7 +155,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
         // 설정 전송 성공 후 수익률 데이터 다시 불러오기
         // 저장된 티커 정보 우선 사용, 없으면 기본값 사용
         const savedSymbol = localStorage.getItem('currentTradingSymbol');
-        const symbol = savedSymbol || currentSymbol || 'XRP-USDT';
+        const symbol = savedSymbol || currentSymbol || HARDCODED_SYMBOL;
         
         console.log('새로고침 시 사용할 티커:', symbol);
         
@@ -152,7 +191,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
         const response = await fetch(`${BACKEND_URL}/api/current-symbol`);
         if (response.ok) {
           const data = await response.json();
-          if (data.symbol && data.symbol !== 'XRP-USDT') {
+          if (data.symbol && data.symbol !== HARDCODED_SYMBOL) {
             setCurrentSymbol(data.symbol);
             // 티커 정보를 로컬 스토리지에 저장
             localStorage.setItem('currentTradingSymbol', data.symbol);
@@ -200,7 +239,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
         }
         
         // 현재 티커가 없으면 기본값 사용
-        const symbol = currentSymbol || 'XRP-USDT';
+        const symbol = currentSymbol || HARDCODED_SYMBOL;
         
         const response = await fetch(`${BACKEND_URL}/api/profit/${symbol}`);
         
@@ -253,10 +292,77 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
     };
   }, [currentSymbol]);
 
+  // 오늘의 수익금 주기적 업데이트 (캘린더가 표시될 때만)
+  useEffect(() => {
+    if (!showCalendar) return;
+    
+    // 초기 오늘 수익금 설정
+    updateTodayProfit();
+    
+    // 30초마다 오늘의 수익금 업데이트
+    const intervalId = setInterval(updateTodayProfit, 30000);
+    
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [showCalendar]);
+
   // 수익률 데이터가 없고 종료된 포지션도 없으면 대기 상태 표시
   if (!profitData && !closedPositionInfo) {
     return (
       <Card title="수익률 모니터링">
+        {/* 캘린더 버튼은 항상 표시 */}
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={() => setShowCalendar(!showCalendar)}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            📅 수익률 캘린더
+          </button>
+        </div>
+        
+        {/* 캘린더가 활성화된 경우 표시 */}
+        {showCalendar && (
+          <div className="mt-6 p-4 bg-gray-800 rounded-lg">
+            <h3 className="text-lg font-semibold text-white mb-4">📅 이번 달 수익률 캘린더</h3>
+            <div className="grid grid-cols-7 gap-1">
+              {/* 요일 헤더 */}
+              {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
+                <div key={index} className="text-center text-gray-400 text-sm font-medium py-2">
+                  {day}
+                </div>
+              ))}
+              
+              {/* 캘린더 데이터 */}
+              {generateCalendarData().map((week, weekIndex) => (
+                week.map((dayData, dayIndex) => (
+                  <div key={`${weekIndex}-${dayIndex}`} className="text-center p-2">
+                    {dayData.day ? (
+                      <div className={`relative ${dayData.isToday ? 'bg-blue-600 rounded-lg p-1' : ''}`}>
+                        <div className={`text-sm font-medium ${dayData.isToday ? 'text-white' : 'text-white'}`}>
+                          {dayData.day}
+                        </div>
+                        {dayData.profit && (
+                          <div className={`text-xs font-bold mt-1 ${dayData.isToday ? 'text-yellow-300' : 'text-green-400'}`}>
+                            +{dayData.profit.toLocaleString()} VST
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-gray-600 text-sm">-</div>
+                    )}
+                  </div>
+                ))
+              ))}
+            </div>
+            <div className="mt-4 text-center">
+              <p className="text-green-400 text-sm">
+                💰 이번 달 총 수익: +{generateCalendarData().flat().filter(day => day.profit).reduce((sum, day) => sum + day.profit, 0).toLocaleString()} VST
+              </p>
+            </div>
+          </div>
+        )}
+        
         <div className="text-center py-8">
           <div className="text-gray-400 mb-2">
             <span className="text-2xl">⏳</span>
@@ -414,7 +520,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-gray-400">티커</p>
-                  <p className="text-xl font-semibold">{closedPositionInfo.symbol || 'XRP-USDT'}</p>
+                  <p className="text-xl font-semibold">{closedPositionInfo.symbol || HARDCODED_SYMBOL}</p>
                 </div>
                 <div>
                   <p className="text-gray-400">포지션 방향</p>
@@ -469,10 +575,12 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
                   week.map((dayData, dayIndex) => (
                     <div key={`${weekIndex}-${dayIndex}`} className="text-center p-2">
                       {dayData.day ? (
-                        <div className="relative">
-                          <div className="text-white text-sm font-medium">{dayData.day}</div>
+                        <div className={`relative ${dayData.isToday ? 'bg-blue-600 rounded-lg p-1' : ''}`}>
+                          <div className={`text-sm font-medium ${dayData.isToday ? 'text-white' : 'text-white'}`}>
+                            {dayData.day}
+                          </div>
                           {dayData.profit && (
-                            <div className="text-green-400 text-xs font-bold mt-1">
+                            <div className={`text-xs font-bold mt-1 ${dayData.isToday ? 'text-yellow-300' : 'text-green-400'}`}>
                               +{dayData.profit.toLocaleString()} VST
                             </div>
                           )}

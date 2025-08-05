@@ -1,31 +1,32 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Card from '../common/Card';
+import React, { useState, useEffect } from 'react';
+import { Card } from '../common/Card';
 import Input from '../common/Input';
 import Button from '../common/Button';
 import Dropdown from '../common/Dropdown';
 
-const INDICATORS = [
-  { value: 'PREMIUM', label: '프리미엄유료지표_MTV' },
-  { value: 'CONBOL', label: '콘볼지표' }
-];
+// 하드코딩된 심볼을 상수로 통합관리
+const HARDCODED_SYMBOL = 'XRP-USDT';
+const BACKEND_URL = 'https://146.56.98.210:443';
 
 const DEFAULT_SETTINGS = {
   apiKey: '',
   secretKey: '',
-  investment: '1000',
-  leverage: '10',
-  takeProfit: '2',
-  stopLoss: '2',
+  investment: 1000,
+  leverage: 10,
+  takeProfit: 2,
+  stopLoss: 2,
   indicator: 'PREMIUM',
   isAutoTradingEnabled: false
 };
 
-            // 백엔드 서버 주소 설정
-            const BACKEND_URL = 'https://146.56.98.210:443';
+const INDICATOR_OPTIONS = [
+  { value: 'PREMIUM', label: '프리미엄지표' },
+  { value: 'CONBOL', label: '콘볼지표' }
+];
 
-export default function SettingsForm({ onPositionClose, onPositionEnter }) {
+export default function SettingsForm({ onSettingsChange }) {
   const [isRunning, setIsRunning] = useState(false);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [isLoading, setIsLoading] = useState(false);
@@ -165,6 +166,31 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
   const toggleAutoTrading = async () => {
     const newStatus = !isRunning;
     
+    // 자동매매 시작 시 포지션 확인
+    if (!isRunning && newStatus) {
+      try {
+        // XRP-USDT로 하드코딩하여 포지션 확인
+        const checkResponse = await fetch(`${BACKEND_URL}/api/check-position`);
+        const checkData = await checkResponse.json();
+        
+        if (!checkResponse.ok) {
+          alert('포지션 확인 중 오류가 발생했습니다.');
+          return;
+        }
+        
+        // 포지션이 있으면 알림
+        if (checkData.hasPosition) {
+          alert(`현재 ${checkData.symbol} 포지션이 있습니다. 자동매매를 시작합니다.`);
+        } else {
+          alert('활성 포지션이 없습니다. 자동매매를 시작합니다.');
+        }
+      } catch (error) {
+        console.error('포지션 확인 중 오류:', error);
+        alert('포지션 확인 중 오류가 발생했습니다.');
+        return;
+      }
+    }
+    
     // 자동매매 중지 시 포지션 확인 및 종료
     if (isRunning && !newStatus) {
       try {
@@ -187,7 +213,8 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
           // 포지션 종료 API 호출
           const closeResponse = await fetch(`${BACKEND_URL}/api/close-position`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ symbol: HARDCODED_SYMBOL })  // XRP-USDT로 하드코딩
           });
           
           if (closeResponse.ok) {
@@ -247,7 +274,7 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
 
     try {
       // 먼저 수익률 API로 현재 포지션 정보 확인
-      const profitResponse = await fetch(`${BACKEND_URL}/api/profit/XRP-USDT`);
+      const profitResponse = await fetch(`${BACKEND_URL}/api/profit/${HARDCODED_SYMBOL}`);
       
       if (!profitResponse.ok) {
         alert('포지션 정보를 가져올 수 없습니다.');
@@ -262,7 +289,7 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
       }
       
       // 포지션 정보에서 심볼 추출
-      const symbol = profitData[0].symbol || 'XRP-USDT';
+      const symbol = profitData[0].symbol || HARDCODED_SYMBOL;
       
       // 포지션 종료 API 호출
       const response = await fetch(`${BACKEND_URL}/api/close-position`, {
@@ -372,7 +399,7 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
           label="지표 선택"
           value={settings.indicator}
           onChange={(value) => setSettings({ ...settings, indicator: value })}
-          options={INDICATORS}
+          options={INDICATOR_OPTIONS}
         />
         <div className="flex gap-4 pt-4">
           <Button onClick={handleSave} disabled={isLoading}>
@@ -402,7 +429,7 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
             {isRunning ? '자동매매 활성화' : '자동매매 비활성화'}
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            선택된 지표: {INDICATORS.find(i => i.value === settings.indicator)?.label}
+            선택된 지표: {INDICATOR_OPTIONS.find(i => i.value === settings.indicator)?.label}
           </p>
           <p className="text-xs text-gray-500 mt-1">
             웹훅 URL: {BACKEND_URL}/api/webhook
