@@ -116,6 +116,50 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
 
   const toggleAutoTrading = async () => {
     const newStatus = !isRunning;
+    
+    // 자동매매 중지 시 포지션 확인 및 종료
+    if (isRunning && !newStatus) {
+      try {
+        // 먼저 포지션 유무 확인
+        const checkResponse = await fetch(`${BACKEND_URL}/api/check-position`);
+        const checkData = await checkResponse.json();
+        
+        if (!checkResponse.ok) {
+          alert('포지션 확인 중 오류가 발생했습니다.');
+          return;
+        }
+        
+        // 포지션이 있는 경우에만 종료 확인
+        if (checkData.hasPosition) {
+          const confirmClose = confirm(`현재 ${checkData.symbol} 포지션이 있습니다. 자동매매를 중지하면 포지션이 종료됩니다. 계속하시겠습니까?`);
+          if (!confirmClose) {
+            return;
+          }
+          
+          // 포지션 종료 API 호출
+          const closeResponse = await fetch(`${BACKEND_URL}/api/close-position`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          
+          if (closeResponse.ok) {
+            alert('포지션이 종료되었습니다.');
+          } else {
+            const errorData = await closeResponse.json();
+            alert(`포지션 종료 실패: ${errorData.detail || '알 수 없는 오류'}`);
+            return;
+          }
+        } else {
+          // 포지션이 없는 경우 바로 중지
+          alert('활성 포지션이 없습니다. 자동매매를 중지합니다.');
+        }
+      } catch (error) {
+        console.error('포지션 확인/종료 중 오류:', error);
+        alert('포지션 확인 중 오류가 발생했습니다.');
+        return;
+      }
+    }
+    
     setIsRunning(newStatus);
     localStorage.setItem('tvAutoStatus', JSON.stringify(newStatus));
     
