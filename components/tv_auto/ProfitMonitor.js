@@ -207,7 +207,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
       const settings = JSON.parse(savedSettings);
       if (settings.apiKey && settings.secretKey) {
         fetchProfitData();  // 초기 데이터 로드
-        intervalId = setInterval(fetchProfitData, 20000);  // 20초마다 업데이트
+        intervalId = setInterval(fetchProfitData, 5000);  // 5초마다 업데이트
       }
     }
 
@@ -329,26 +329,40 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
           {/* 차트 */}
           <div className="h-72">
             <LineChart width={600} height={300} data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
+              <CartesianGrid strokeDasharray="5 5" stroke="#374151" strokeOpacity={0.3} />
               <XAxis 
                 dataKey="time" 
                 interval="preserveStartEnd"
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                axisLine={{ stroke: '#4B5563' }}
+                tickLine={{ stroke: '#4B5563' }}
               />
-              <YAxis />
+              <YAxis 
+                tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                axisLine={{ stroke: '#4B5563' }}
+                tickLine={{ stroke: '#4B5563' }}
+              />
               <Tooltip 
                 formatter={(value, name, props) => [
                   `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`,
                   '수익률'
                 ]}
+                contentStyle={{
+                  backgroundColor: '#1F2937',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#F9FAFB'
+                }}
               />
               <Line 
                 type="monotone" 
                 dataKey="profit" 
                 stroke={(data) => data.isPositive ? '#10B981' : '#EF4444'}
                 name="수익률 (%)"
-                strokeWidth={2}
+                strokeWidth={5}
                 dot={false}
+                activeDot={{ r: 8, strokeWidth: 3, stroke: '#fff', fill: (data) => data.isPositive ? '#10B981' : '#EF4444' }}
+                connectNulls={true}
               />
             </LineChart>
           </div>
