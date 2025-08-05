@@ -359,9 +359,9 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
                 dataKey="profit" 
                 stroke={(data) => data.isPositive ? '#10B981' : '#EF4444'}
                 name="수익률 (%)"
-                strokeWidth={5}
-                dot={false}
-                activeDot={{ r: 8, strokeWidth: 3, stroke: '#fff', fill: (data) => data.isPositive ? '#10B981' : '#EF4444' }}
+                strokeWidth={6}
+                dot={{ r: 4, fill: (data) => data.isPositive ? '#10B981' : '#EF4444', stroke: '#fff', strokeWidth: 2 }}
+                activeDot={{ r: 6, strokeWidth: 3, stroke: '#fff', fill: (data) => data.isPositive ? '#10B981' : '#EF4444' }}
                 connectNulls={true}
               />
             </LineChart>
