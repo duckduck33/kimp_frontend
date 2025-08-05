@@ -43,7 +43,7 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
       localStorage.setItem('tvAutoSettings', JSON.stringify(settings));
       
       // 백엔드로 설정 전송
-      const response = await fetch('http://localhost:8000/api/update-settings', {
+      const response = await fetch('http://146.56.98.210:8000/api/update-settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings)

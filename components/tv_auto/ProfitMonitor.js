@@ -13,7 +13,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition })
   useEffect(() => {
     const fetchCurrentSymbol = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/current-symbol');
+        const response = await fetch('http://146.56.98.210:8000/api/current-symbol');
         if (response.ok) {
           const data = await response.json();
           setCurrentSymbol(data.symbol);
@@ -39,7 +39,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition })
           return;
         }
 
-        const response = await fetch(`http://localhost:8000/api/profit/${currentSymbol}`);
+        const response = await fetch(`http://146.56.98.210:8000/api/profit/${currentSymbol}`);
         
         if (!response.ok) {
           console.error('수익률 조회 실패:', response.status);
