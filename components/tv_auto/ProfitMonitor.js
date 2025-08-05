@@ -69,7 +69,8 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
           setProfitData(data[0]);
           
           const now = new Date();
-          const timeStr = now.toLocaleTimeString();
+          // 5분 단위로 시간 표시 (분 단위까지만)
+          const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
           setChartData(prev => [
             ...prev,
             {
@@ -85,7 +86,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
 
     // 항상 모니터링 시작 (포지션 상태와 관계없이)
     fetchProfitData();  // 초기 데이터 로드
-    intervalId = setInterval(fetchProfitData, 5000);  // 5초마다 업데이트
+    intervalId = setInterval(fetchProfitData, 300000);  // 5분마다 업데이트 (300초)
 
     return () => {
       if (intervalId) {
@@ -115,9 +116,15 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
               <p className="text-xl font-semibold">{currentSymbol}</p>
             </div>
             <div>
-              <p className="text-gray-400">포지션</p>
+              <p className="text-gray-400">포지션 방향</p>
               <p className="text-xl font-semibold">
-                {profitData.position_side} {profitData.position_amt}
+                {profitData.position_side}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-400">포지션 수량</p>
+              <p className="text-xl font-semibold">
+                {profitData.position_amt.toLocaleString()}
               </p>
             </div>
             <div>
@@ -138,13 +145,23 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
                 {profitData.actual_profit_rate.toFixed(2)}%
               </p>
             </div>
+            <div>
+              <p className="text-gray-400">미실현 손익</p>
+              <p className={`text-xl font-semibold ${profitData.unrealized_profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {profitData.unrealized_profit.toFixed(2)} VST
+              </p>
+            </div>
           </div>
 
           {/* 차트 */}
           <div className="h-72">
             <LineChart width={600} height={300} data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
+              <XAxis 
+                dataKey="time" 
+                interval="preserveStartEnd"
+                tick={{ fontSize: 12 }}
+              />
               <YAxis />
               <Tooltip />
               <Line 
@@ -152,6 +169,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
                 dataKey="profit" 
                 stroke="#8884d8" 
                 name="수익률 (%)"
+                strokeWidth={2}
               />
             </LineChart>
           </div>

@@ -45,8 +45,8 @@ export default function NavBar() {
   const handleApplyBtnClick = () => {
     // 랜덤 링크선택
     const links = [
-      "https://zamtown.com/fobitapp",
-      "https://zamtown.com/ss"
+      // "https://zamtown.com/ss",
+      "https://zamtown.com/fobitapp"
     ];
     const randomLink = links[Math.floor(Math.random() * links.length)];
     
