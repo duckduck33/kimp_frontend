@@ -170,6 +170,14 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
       }
     };
 
+    // 저장된 티커 정보가 있으면 먼저 사용
+    const savedSymbol = localStorage.getItem('currentTradingSymbol');
+    if (savedSymbol) {
+      setCurrentSymbol(savedSymbol);
+    }
+
+    // 웹훅 신호가 들어오기 전까지는 API 호출하지 않음
+    // 포지션이 생겼을 때만 API 호출 시작
     if (hasActivePosition && !previousHasActivePosition && onPositionEnter) {
       onPositionEnter();
       // 진입 신호 알림
@@ -179,7 +187,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
         timestamp: new Date()
       });
       
-      // 포지션 진입 시 API 호출 시작
+      // 포지션 진입 시에만 API 호출 시작
       const savedSettings = localStorage.getItem('tvAutoSettings');
       const savedStatus = localStorage.getItem('tvAutoStatus');
       const isAutoTradingEnabled = savedStatus ? JSON.parse(savedStatus) : false;
@@ -219,6 +227,79 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
     }
     setPreviousHasActivePosition(hasActivePosition);
   }, [hasActivePosition, previousHasActivePosition, onPositionEnter, onPositionClose, closedPositionInfo, currentSymbol]);
+
+  // 자동매매가 활성화된 경우 5초마다 API 호출
+  useEffect(() => {
+    const fetchProfitData = async () => {
+      try {
+        // 설정이 저장되었는지 확인 (로컬 스토리지에서 API 키 확인)
+        const savedSettings = localStorage.getItem('tvAutoSettings');
+        if (!savedSettings) {
+          // 설정이 저장되지 않은 경우 수익률 조회하지 않음
+          return;
+        }
+        
+        const settings = JSON.parse(savedSettings);
+        if (!settings.apiKey || !settings.secretKey) {
+          // API 키가 설정되지 않은 경우 수익률 조회하지 않음
+          return;
+        }
+        
+        // 현재 티커가 없으면 기본값 사용
+        const symbol = currentSymbol || HARDCODED_SYMBOL;
+        
+        const response = await fetch(`${BACKEND_URL}/api/profit/${symbol}`);
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            // 포지션이 없는 경우
+            setProfitData(null);
+            setChartData([]);
+            return;
+          }
+          console.error('수익률 조회 실패:', response.status);
+          return;
+        }
+
+        const data = await response.json();
+        if (data && data.length > 0) {
+          setProfitData(data[0]);
+          
+          const now = new Date();
+          // 20초 단위로 시간 표시 (초 단위까지 포함)
+          const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+          setChartData(prev => [
+            ...prev,
+            {
+              time: timeStr,
+              profit: data[0].actual_profit_rate,  // 원래 값 그대로 사용
+              isPositive: data[0].actual_profit_rate >= 0
+            }
+          ].slice(-20));
+        }
+      } catch (error) {
+        console.error('수익률 조회 중 오류:', error);
+      }
+    };
+
+    // 자동매매가 활성화된 경우에만 5초마다 API 호출
+    const savedStatus = localStorage.getItem('tvAutoStatus');
+    const isAutoTradingEnabled = savedStatus ? JSON.parse(savedStatus) : false;
+    
+    if (isAutoTradingEnabled) {
+      // 초기 데이터 로드
+      fetchProfitData();
+      
+      // 5초마다 업데이트
+      const intervalId = setInterval(fetchProfitData, 5000);
+      
+      return () => {
+        if (intervalId) {
+          clearInterval(intervalId);
+        }
+      };
+    }
+  }, [currentSymbol]);
 
   // 오늘의 수익금 주기적 업데이트 (캘린더가 표시될 때만)
   useEffect(() => {
