@@ -23,7 +23,7 @@ const DEFAULT_SETTINGS = {
 };
 
 // 백엔드 서버 주소 설정
-const BACKEND_URL = 'http://146.56.98.210:80';
+const BACKEND_URL = 'https://146.56.98.210:443';
 
 export default function SettingsForm({ onPositionClose, onPositionEnter }) {
   const [isRunning, setIsRunning] = useState(false);
@@ -109,15 +109,20 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
       };
       
       console.log('설정 저장 요청:', `${BACKEND_URL}/api/update-settings`, requestBody);
+      console.log('요청 헤더:', { 'Content-Type': 'application/json' });
       
       // 백엔드로 설정 전송
       const response = await fetch(`${BACKEND_URL}/api/update-settings`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify(requestBody)
       });
       
       console.log('설정 저장 응답:', response.status, response.statusText);
+      console.log('응답 헤더:', Object.fromEntries(response.headers.entries()));
       
       if (response.ok) {
         const responseData = await response.json();
@@ -126,11 +131,14 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
       } else {
         const errorText = await response.text();
         console.error('백엔드 설정 저장 실패:', response.status, errorText);
-        alert('설정 저장 중 오류가 발생했습니다.');
+        alert(`설정 저장 중 오류가 발생했습니다. (${response.status})`);
       }
     } catch (error) {
       console.error('설정 저장 중 오류:', error);
-      alert('설정 저장 중 오류가 발생했습니다.');
+      console.error('에러 타입:', error.name);
+      console.error('에러 메시지:', error.message);
+      console.error('에러 스택:', error.stack);
+      alert(`설정 저장 중 오류가 발생했습니다: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
