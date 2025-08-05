@@ -721,6 +721,27 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
           )}
         </div>
       )}
+      
+      {/* 서비스 이용 동의 문구 */}
+      <div className="mt-8 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+        <div className="text-xs text-gray-400 leading-relaxed">
+          <p className="mb-2">
+            <span className="font-medium text-gray-300">⚠️ 서비스 이용 동의</span>
+          </p>
+          <p className="mb-1">
+            • 트레이딩뷰 사이트의 유지보수나 거래소 API 장애로 주문이 이루어지지 않을 수 있습니다.
+          </p>
+          <p className="mb-1">
+            • 주문 메시지에 오류가 있을 시에는 주문 실행이 되지 않을 수 있습니다.
+          </p>
+          <p className="mb-1">
+            • 본 서비스 이용 시 발생할 수 있는 서비스 장애 또는 발생하는 피해에 대하여 일체 책임을 지지 않습니다.
+          </p>
+          <p className="text-gray-300 font-medium">
+            위 내용에 동의하는 경우에만 본 서비스를 사용해 주시기 바랍니다.
+          </p>
+        </div>
+      </div>
     </Card>
   );
 }
