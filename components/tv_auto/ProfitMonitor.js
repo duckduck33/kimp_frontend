@@ -4,16 +4,30 @@ import { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
-export default function ProfitMonitor({ closedPositionInfo, hasActivePosition }) {
+// 백엔드 서버 주소 설정
+const BACKEND_URL = 'http://localhost:8000';
+
+export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, onPositionEnter, onPositionClose }) {
   const [profitData, setProfitData] = useState(null);
   const [chartData, setChartData] = useState([]);
   const [currentSymbol, setCurrentSymbol] = useState('XRP-USDT');
+  const [previousHasActivePosition, setPreviousHasActivePosition] = useState(false);
+
+  // 포지션 상태 변화 감지
+  useEffect(() => {
+    if (hasActivePosition && !previousHasActivePosition && onPositionEnter) {
+      onPositionEnter();
+    } else if (!hasActivePosition && previousHasActivePosition && onPositionClose) {
+      onPositionClose(closedPositionInfo);
+    }
+    setPreviousHasActivePosition(hasActivePosition);
+  }, [hasActivePosition, previousHasActivePosition, onPositionEnter, onPositionClose, closedPositionInfo]);
 
   // 현재 거래 중인 티커 가져오기
   useEffect(() => {
     const fetchCurrentSymbol = async () => {
       try {
-        const response = await fetch('http://146.56.98.210:8000/api/current-symbol');
+        const response = await fetch(`${BACKEND_URL}/api/current-symbol`);
         if (response.ok) {
           const data = await response.json();
           setCurrentSymbol(data.symbol);
@@ -39,7 +53,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition })
           return;
         }
 
-        const response = await fetch(`http://146.56.98.210:8000/api/profit/${currentSymbol}`);
+        const response = await fetch(`${BACKEND_URL}/api/profit/${currentSymbol}`);
         
         if (!response.ok) {
           console.error('수익률 조회 실패:', response.status);

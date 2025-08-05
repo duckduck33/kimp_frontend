@@ -31,6 +31,8 @@ export default function TvAutoPage() {
         <ProfitMonitor 
           closedPositionInfo={closedPositionInfo}
           hasActivePosition={hasActivePosition}
+          onPositionEnter={handlePositionEnter}
+          onPositionClose={handlePositionClose}
         />
       </div>
     </main>
