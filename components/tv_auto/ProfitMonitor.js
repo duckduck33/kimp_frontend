@@ -142,7 +142,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
           setChartData(prev => [
             ...prev,
             {
-              time: timeStr,
+              time: now.getTime(), // 현재 시간을 밀리초로 저장
               profit: data[0].actual_profit_rate,  // 원래 값 그대로 사용
               isPositive: data[0].actual_profit_rate >= 0
             }
@@ -187,6 +187,9 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
         timestamp: new Date()
       });
       
+      // 포지션 진입 시점 저장
+      localStorage.setItem('positionEntryTime', new Date().getTime().toString());
+      
       // 포지션 진입 시에만 API 호출 시작
       const savedSettings = localStorage.getItem('tvAutoSettings');
       const savedStatus = localStorage.getItem('tvAutoStatus');
@@ -224,6 +227,8 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
       });
       // 포지션 종료 시 티커 정보 삭제
       localStorage.removeItem('currentTradingSymbol');
+      // 포지션 진입 시간 삭제
+      localStorage.removeItem('positionEntryTime');
     }
     setPreviousHasActivePosition(hasActivePosition);
   }, [hasActivePosition, previousHasActivePosition, onPositionEnter, onPositionClose, closedPositionInfo, currentSymbol]);
@@ -271,7 +276,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
           setChartData(prev => [
             ...prev,
             {
-              time: timeStr,
+              time: now.getTime(), // 현재 시간을 밀리초로 저장
               profit: data[0].actual_profit_rate,  // 원래 값 그대로 사용
               isPositive: data[0].actual_profit_rate >= 0
             }
@@ -567,7 +572,21 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
               <CartesianGrid strokeDasharray="5 5" stroke="#374151" strokeOpacity={0.3} />
               <XAxis 
                 dataKey="time" 
-                interval="preserveStartEnd"
+                type="number"
+                domain={(() => {
+                  const entryTime = localStorage.getItem('positionEntryTime');
+                  const currentTime = new Date().getTime();
+                  return entryTime ? [parseInt(entryTime), currentTime] : ['dataMin', 'dataMax'];
+                })()}
+                tickFormatter={(value) => {
+                  const entryTime = localStorage.getItem('positionEntryTime');
+                  if (!entryTime) return new Date(value).toLocaleTimeString();
+                  
+                  const elapsed = value - parseInt(entryTime);
+                  const minutes = Math.floor(elapsed / 60000);
+                  const seconds = Math.floor((elapsed % 60000) / 1000);
+                  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                }}
                 tick={{ fontSize: 11, fill: '#9CA3AF' }}
                 axisLine={{ stroke: '#4B5563' }}
                 tickLine={{ stroke: '#4B5563' }}
@@ -582,6 +601,15 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
                   `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`,
                   '수익률'
                 ]}
+                labelFormatter={(value) => {
+                  const entryTime = localStorage.getItem('positionEntryTime');
+                  if (!entryTime) return new Date(value).toLocaleTimeString();
+                  
+                  const elapsed = value - parseInt(entryTime);
+                  const minutes = Math.floor(elapsed / 60000);
+                  const seconds = Math.floor((elapsed % 60000) / 1000);
+                  return `경과시간: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                }}
                 contentStyle={{
                   backgroundColor: '#1F2937',
                   border: '1px solid #374151',
