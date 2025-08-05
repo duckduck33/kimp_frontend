@@ -153,6 +153,23 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
       }
     };
 
+    const fetchCurrentSymbol = async () => {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/current-symbol`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.symbol && data.symbol !== HARDCODED_SYMBOL) {
+            setCurrentSymbol(data.symbol);
+            // 티커 정보를 로컬 스토리지에 저장
+            localStorage.setItem('currentTradingSymbol', data.symbol);
+            console.log('현재 티커 업데이트:', data.symbol);
+          }
+        }
+      } catch (error) {
+        console.error('현재 티커 조회 실패:', error);
+      }
+    };
+
     if (hasActivePosition && !previousHasActivePosition && onPositionEnter) {
       onPositionEnter();
       // 진입 신호 알림
@@ -175,10 +192,16 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
           // 5초마다 업데이트 시작
           const intervalId = setInterval(fetchProfitData, 5000);
           
+          // 현재 티커도 주기적으로 업데이트
+          const symbolIntervalId = setInterval(fetchCurrentSymbol, 10000);
+          
           // 컴포넌트 언마운트 시 인터벌 정리
           return () => {
             if (intervalId) {
               clearInterval(intervalId);
+            }
+            if (symbolIntervalId) {
+              clearInterval(symbolIntervalId);
             }
           };
         }
@@ -282,47 +305,6 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
       setIsRefreshing(false);
     }
   };
-
-  // 현재 거래 중인 티커 가져오기
-  useEffect(() => {
-    const fetchCurrentSymbol = async () => {
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/current-symbol`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.symbol && data.symbol !== HARDCODED_SYMBOL) {
-            setCurrentSymbol(data.symbol);
-            // 티커 정보를 로컬 스토리지에 저장
-            localStorage.setItem('currentTradingSymbol', data.symbol);
-            console.log('현재 티커 업데이트:', data.symbol);
-          }
-        }
-      } catch (error) {
-        console.error('현재 티커 조회 실패:', error);
-      }
-    };
-
-    // 저장된 티커 정보가 있으면 먼저 사용
-    const savedSymbol = localStorage.getItem('currentTradingSymbol');
-    if (savedSymbol) {
-      setCurrentSymbol(savedSymbol);
-    }
-
-    // 자동매매가 활성화된 경우에만 주기적으로 현재 티커 조회
-    const savedStatus = localStorage.getItem('tvAutoStatus');
-    const isAutoTradingEnabled = savedStatus ? JSON.parse(savedStatus) : false;
-    
-    if (isAutoTradingEnabled) {
-      fetchCurrentSymbol(); // 초기 로드
-      const intervalId = setInterval(fetchCurrentSymbol, 10000); // 10초마다 확인
-
-      return () => {
-        if (intervalId) {
-          clearInterval(intervalId);
-        }
-      };
-    }
-  }, []);
 
   // 수익률 데이터가 없고 종료된 포지션도 없으면 대기 상태 표시
   if (!profitData && !closedPositionInfo) {
