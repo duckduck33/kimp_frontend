@@ -185,8 +185,8 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
           setProfitData(data[0]);
           
           const now = new Date();
-          // 5분 단위로 시간 표시 (분 단위까지만)
-          const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+          // 20초 단위로 시간 표시 (초 단위까지 포함)
+          const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
           setChartData(prev => [
             ...prev,
             {
@@ -207,7 +207,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
       const settings = JSON.parse(savedSettings);
       if (settings.apiKey && settings.secretKey) {
         fetchProfitData();  // 초기 데이터 로드
-        intervalId = setInterval(fetchProfitData, 300000);  // 5분마다 업데이트 (300초)
+        intervalId = setInterval(fetchProfitData, 20000);  // 20초마다 업데이트
       }
     }
 
