@@ -12,16 +12,31 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
   const [chartData, setChartData] = useState([]);
   const [currentSymbol, setCurrentSymbol] = useState('XRP-USDT');
   const [previousHasActivePosition, setPreviousHasActivePosition] = useState(false);
+  const [notification, setNotification] = useState(null);
 
   // 포지션 상태 변화 감지
   useEffect(() => {
     if (hasActivePosition && !previousHasActivePosition && onPositionEnter) {
       onPositionEnter();
+      // 진입 신호 알림
+      setNotification({
+        type: 'enter',
+        message: '진입신호가 발생하여 포지션을 진입합니다',
+        timestamp: new Date()
+      });
     } else if (!hasActivePosition && previousHasActivePosition && onPositionClose) {
       onPositionClose(closedPositionInfo);
+      // 종료 신호 알림
+      setNotification({
+        type: 'exit',
+        message: '종료신호가 발생하여 포지션을 종료합니다',
+        timestamp: new Date()
+      });
     }
     setPreviousHasActivePosition(hasActivePosition);
   }, [hasActivePosition, previousHasActivePosition, onPositionEnter, onPositionClose, closedPositionInfo]);
+
+  // 알림은 수동으로만 제거 (자동 제거 없음)
 
   // 현재 거래 중인 티커 가져오기
   useEffect(() => {
@@ -95,12 +110,20 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
     };
   }, [currentSymbol]);
 
-  // 수익률 데이터가 없으면 포지션 없음 표시
-  if (!profitData) {
+  // 수익률 데이터가 없고 종료된 포지션도 없으면 대기 상태 표시
+  if (!profitData && !closedPositionInfo) {
     return (
       <Card title="수익률 모니터링">
-        <div className="text-center text-gray-400 py-4">
-          활성화된 포지션이 없습니다
+        <div className="text-center py-8">
+          <div className="text-gray-400 mb-2">
+            <span className="text-2xl">⏳</span>
+          </div>
+          <div className="text-gray-300 font-medium">
+            진입신호를 기다리는 중입니다
+          </div>
+          <div className="text-gray-500 text-sm mt-2">
+            TradingView에서 신호가 오면 자동으로 포지션이 진입됩니다
+          </div>
         </div>
       </Card>
     );
@@ -108,6 +131,33 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
 
   return (
     <Card title="수익률 모니터링">
+      {/* 알림 메시지 */}
+      {notification && (
+        <div className={`p-4 rounded-lg mb-4 border-l-4 ${
+          notification.type === 'enter' 
+            ? 'bg-blue-500/10 border-blue-500 text-blue-200' 
+            : 'bg-red-500/10 border-red-500 text-red-200'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <span className={`text-lg ${
+                notification.type === 'enter' ? 'text-blue-400' : 'text-red-400'
+              }`}>
+                {notification.type === 'enter' ? '📈' : '📉'}
+              </span>
+              <span className="font-semibold">{notification.message}</span>
+            </div>
+            <button 
+              onClick={() => setNotification(null)}
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* 활성 포지션 정보 */}
       {profitData && (
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
@@ -176,33 +226,42 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
 
           {/* 종료된 포지션 정보 */}
           {closedPositionInfo && (
-            <div className="border border-gray-600 rounded-lg p-4 mt-4">
-              <h3 className="text-lg font-semibold text-gray-200 mb-3">종료된 포지션 정보</h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-gray-400">티커</p>
+                  <p className="text-xl font-semibold">{closedPositionInfo.symbol || 'XRP-USDT'}</p>
+                </div>
                 <div>
                   <p className="text-gray-400">포지션 방향</p>
-                  <p className="text-lg font-semibold">{closedPositionInfo.position_side}</p>
+                  <p className="text-xl font-semibold">{closedPositionInfo.position_side}</p>
                 </div>
                 <div>
-                  <p className="text-gray-400">수량</p>
-                  <p className="text-lg font-semibold">{closedPositionInfo.quantity}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400">진입가</p>
-                  <p className="text-lg font-semibold">{closedPositionInfo.entry_price}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400">종료가</p>
-                  <p className="text-lg font-semibold">{closedPositionInfo.exit_price}</p>
+                  <p className="text-gray-400">포지션 수량</p>
+                  <p className="text-xl font-semibold">{closedPositionInfo.quantity?.toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-gray-400">레버리지</p>
-                  <p className="text-lg font-semibold">{closedPositionInfo.leverage}x</p>
+                  <p className="text-xl font-semibold">{closedPositionInfo.leverage}x</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">진입가</p>
+                  <p className="text-xl font-semibold">{closedPositionInfo.entry_price}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">종료가</p>
+                  <p className="text-xl font-semibold">{closedPositionInfo.exit_price}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">최종 수익률</p>
+                  <p className={`text-xl font-semibold ${closedPositionInfo.realized_profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {closedPositionInfo.realized_profit_percentage?.toFixed(2) || '0.00'}%
+                  </p>
                 </div>
                 <div>
                   <p className="text-gray-400">실현 손익</p>
-                  <p className={`text-lg font-semibold ${closedPositionInfo.realized_profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {closedPositionInfo.realized_profit} VST
+                  <p className={`text-xl font-semibold ${closedPositionInfo.realized_profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {closedPositionInfo.realized_profit?.toFixed(2) || '0.00'} VST
                   </p>
                 </div>
               </div>
