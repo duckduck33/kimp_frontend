@@ -209,15 +209,20 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
       setCurrentSymbol(savedSymbol);
     }
 
-    // 주기적으로 현재 티커 조회 (웹훅 신호 대기)
-    fetchCurrentSymbol(); // 초기 로드
-    const intervalId = setInterval(fetchCurrentSymbol, 10000); // 10초마다 확인
+    // 자동매매가 활성화된 경우에만 주기적으로 현재 티커 조회
+    const savedStatus = localStorage.getItem('tvAutoStatus');
+    const isAutoTradingEnabled = savedStatus ? JSON.parse(savedStatus) : false;
+    
+    if (isAutoTradingEnabled) {
+      fetchCurrentSymbol(); // 초기 로드
+      const intervalId = setInterval(fetchCurrentSymbol, 10000); // 10초마다 확인
 
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
+      return () => {
+        if (intervalId) {
+          clearInterval(intervalId);
+        }
+      };
+    }
   }, []);
 
   useEffect(() => {
@@ -275,9 +280,12 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
       }
     };
 
-    // 설정이 저장된 경우에만 모니터링 시작
+    // 설정이 저장되고 자동매매가 활성화된 경우에만 모니터링 시작
     const savedSettings = localStorage.getItem('tvAutoSettings');
-    if (savedSettings) {
+    const savedStatus = localStorage.getItem('tvAutoStatus');
+    const isAutoTradingEnabled = savedStatus ? JSON.parse(savedStatus) : false;
+    
+    if (savedSettings && isAutoTradingEnabled) {
       const settings = JSON.parse(savedSettings);
       if (settings.apiKey && settings.secretKey) {
         fetchProfitData();  // 초기 데이터 로드
