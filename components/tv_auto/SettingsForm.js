@@ -45,8 +45,6 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
 
     // 백엔드 서버 상태 확인
     checkServerStatus();
-    // 백엔드에서 설정 불러오기
-    loadSettingsFromBackend();
   }, []);
 
   const checkServerStatus = async () => {
@@ -62,34 +60,6 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
     } catch (error) {
       console.error('서버 연결 실패:', error);
       setServerStatus('error');
-    }
-  };
-
-  const loadSettingsFromBackend = async () => {
-    try {
-      console.log('설정 불러오기 중:', `${BACKEND_URL}/api/settings`);
-      const response = await fetch(`${BACKEND_URL}/api/settings`);
-      console.log('설정 응답:', response.status, response.statusText);
-      if (response.ok) {
-        const data = await response.json();
-        console.log('설정 데이터:', data);
-        if (data.success && data.data) {
-          const backendSettings = data.data;
-          setSettings({
-            apiKey: backendSettings.apiKey || '',
-            secretKey: backendSettings.secretKey || '',
-            investment: backendSettings.investment?.toString() || '1000',
-            leverage: backendSettings.leverage?.toString() || '10',
-            takeProfit: backendSettings.takeProfit?.toString() || '2',
-            stopLoss: backendSettings.stopLoss?.toString() || '2',
-            indicator: backendSettings.indicator || 'PREMIUM',
-            isAutoTradingEnabled: backendSettings.isAutoTradingEnabled || false
-          });
-          setIsRunning(backendSettings.isAutoTradingEnabled || false);
-        }
-      }
-    } catch (error) {
-      console.error('백엔드 설정 불러오기 실패:', error);
     }
   };
 
