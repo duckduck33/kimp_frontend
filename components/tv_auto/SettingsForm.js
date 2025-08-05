@@ -30,6 +30,7 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [isLoading, setIsLoading] = useState(false);
   const [serverStatus, setServerStatus] = useState('checking');
+  const [isSettingsSaved, setIsSettingsSaved] = useState(false);
 
   useEffect(() => {
     // 로컬 스토리지에서 설정 불러오기
@@ -37,7 +38,15 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
     const savedStatus = localStorage.getItem('tvAutoStatus');
     
     if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
+      const parsedSettings = JSON.parse(savedSettings);
+      setSettings(parsedSettings);
+      // 설정이 저장되어 있으면 저장됨 상태로 설정
+      setIsSettingsSaved(true);
+      
+      // 백엔드에 설정 다시 전송 (새로고침 후 복구)
+      if (parsedSettings.apiKey && parsedSettings.secretKey) {
+        sendSettingsToBackend(parsedSettings, savedStatus ? JSON.parse(savedStatus) : false);
+      }
     }
     if (savedStatus) {
       setIsRunning(JSON.parse(savedStatus));
@@ -46,6 +55,37 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
     // 백엔드 서버 상태 확인
     checkServerStatus();
   }, []);
+
+  // 백엔드에 설정 전송하는 함수
+  const sendSettingsToBackend = async (settings, isRunning) => {
+    try {
+      const requestBody = {
+        ...settings,
+        investment: parseFloat(settings.investment),
+        leverage: parseInt(settings.leverage),
+        takeProfit: parseFloat(settings.takeProfit),
+        stopLoss: parseFloat(settings.stopLoss),
+        isAutoTradingEnabled: isRunning
+      };
+      
+      const response = await fetch(`${BACKEND_URL}/api/update-settings`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+      
+      if (response.ok) {
+        console.log('설정 복구 성공');
+      } else {
+        console.error('설정 복구 실패:', response.status);
+      }
+    } catch (error) {
+      console.error('설정 복구 중 오류:', error);
+    }
+  };
 
   const checkServerStatus = async () => {
     try {
@@ -97,7 +137,15 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
       if (response.ok) {
         const responseData = await response.json();
         console.log('설정 저장 성공:', responseData);
-        alert('설정이 저장되었습니다.');
+        alert('설정이 저장되었습니다. 이제 모든 기능이 활성화됩니다.');
+        
+        // 설정 저장 성공 상태로 변경
+        setIsSettingsSaved(true);
+        
+        // 설정 저장 성공 후 자동매매 상태도 업데이트
+        if (isRunning) {
+          await toggleAutoTrading();
+        }
       } else {
         const errorText = await response.text();
         console.error('백엔드 설정 저장 실패:', response.status, errorText);
@@ -254,7 +302,7 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
         />
         <div className="flex gap-4 pt-4">
           <Button onClick={handleSave} disabled={isLoading}>
-            {isLoading ? '저장 중...' : '설정 저장'}
+            {isLoading ? '저장 중...' : isSettingsSaved ? '설정 저장됨' : '설정 저장'}
           </Button>
           <Button
             onClick={toggleAutoTrading}
