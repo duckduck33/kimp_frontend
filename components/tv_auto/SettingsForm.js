@@ -142,10 +142,10 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
         // 설정 저장 성공 상태로 변경
         setIsSettingsSaved(true);
         
-        // 설정 저장 성공 후 자동매매 상태도 업데이트
-        if (isRunning) {
-          await toggleAutoTrading();
-        }
+        // 설정 저장 성공 후 자동매매 상태 업데이트 제거
+        // if (isRunning) {
+        //   await toggleAutoTrading();
+        // }
       } else {
         const errorText = await response.text();
         console.error('백엔드 설정 저장 실패:', response.status, errorText);

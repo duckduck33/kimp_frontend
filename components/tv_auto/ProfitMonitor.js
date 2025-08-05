@@ -14,6 +14,41 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
   const [previousHasActivePosition, setPreviousHasActivePosition] = useState(false);
   const [notification, setNotification] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+
+  // 캘린더 데이터 생성
+  const generateCalendarData = () => {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    
+    const calendarData = [];
+    let dayCount = 1;
+    
+    // 이번 달의 모든 날짜에 대해 수익금 데이터 생성
+    for (let i = 0; i < 6; i++) {
+      const week = [];
+      for (let j = 0; j < 7; j++) {
+        if (i === 0 && j < firstDay) {
+          // 이번 달이 시작되기 전의 빈 칸
+          week.push({ day: '', profit: null });
+        } else if (dayCount > daysInMonth) {
+          // 이번 달이 끝난 후의 빈 칸
+          week.push({ day: '', profit: null });
+        } else {
+          // 이번 달의 날짜
+          const profit = Math.floor(Math.random() * 500) + 100; // 100~600 랜덤 수익금
+          week.push({ day: dayCount, profit: profit });
+          dayCount++;
+        }
+      }
+      calendarData.push(week);
+    }
+    
+    return calendarData;
+  };
 
   // 포지션 상태 변화 감지
   useEffect(() => {
@@ -239,8 +274,8 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
 
   return (
     <Card title="수익률 모니터링">
-      {/* 새로고침 버튼 */}
-      <div className="flex justify-end mb-4">
+      {/* 새로고침 버튼과 캘린더 버튼 */}
+      <div className="flex justify-between mb-4">
         <button
           onClick={handleManualRefresh}
           disabled={isRefreshing}
@@ -251,6 +286,12 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
           }`}
         >
           {isRefreshing ? '새로고침 중...' : '🔄 새로고침'}
+        </button>
+        <button
+          onClick={() => setShowCalendar(!showCalendar)}
+          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+        >
+          📅 수익률 캘린더
         </button>
       </div>
       
@@ -407,6 +448,46 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
                     {closedPositionInfo.realized_profit?.toFixed(2) || '0.00'} VST
                   </p>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* 수익률 캘린더 */}
+          {showCalendar && (
+            <div className="mt-6 p-4 bg-gray-800 rounded-lg">
+              <h3 className="text-lg font-semibold text-white mb-4">📅 이번 달 수익률 캘린더</h3>
+              <div className="grid grid-cols-7 gap-1">
+                {/* 요일 헤더 */}
+                {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
+                  <div key={index} className="text-center text-gray-400 text-sm font-medium py-2">
+                    {day}
+                  </div>
+                ))}
+                
+                {/* 캘린더 데이터 */}
+                {generateCalendarData().map((week, weekIndex) => (
+                  week.map((dayData, dayIndex) => (
+                    <div key={`${weekIndex}-${dayIndex}`} className="text-center p-2">
+                      {dayData.day ? (
+                        <div className="relative">
+                          <div className="text-white text-sm font-medium">{dayData.day}</div>
+                          {dayData.profit && (
+                            <div className="text-green-400 text-xs font-bold mt-1">
+                              +{dayData.profit.toLocaleString()} VST
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-gray-600 text-sm">-</div>
+                      )}
+                    </div>
+                  ))
+                ))}
+              </div>
+              <div className="mt-4 text-center">
+                <p className="text-green-400 text-sm">
+                  💰 이번 달 총 수익: +{generateCalendarData().flat().filter(day => day.profit).reduce((sum, day) => sum + day.profit, 0).toLocaleString()} VST
+                </p>
               </div>
             </div>
           )}
