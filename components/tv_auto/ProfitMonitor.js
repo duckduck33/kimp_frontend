@@ -90,7 +90,8 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
             ...prev,
             {
               time: timeStr,
-              profit: data[0].actual_profit_rate
+              profit: data[0].actual_profit_rate,  // 원래 값 그대로 사용
+              isPositive: data[0].actual_profit_rate >= 0
             }
           ].slice(-20));
         }
@@ -213,13 +214,19 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
                 tick={{ fontSize: 12 }}
               />
               <YAxis />
-              <Tooltip />
+              <Tooltip 
+                formatter={(value, name, props) => [
+                  `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`,
+                  '수익률'
+                ]}
+              />
               <Line 
                 type="monotone" 
                 dataKey="profit" 
-                stroke="#8884d8" 
+                stroke={(data) => data.isPositive ? '#10B981' : '#EF4444'}
                 name="수익률 (%)"
                 strokeWidth={2}
+                dot={{ fill: (data) => data.isPositive ? '#10B981' : '#EF4444' }}
               />
             </LineChart>
           </div>
