@@ -348,7 +348,6 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
                 stroke={(data) => data.isPositive ? '#10B981' : '#EF4444'}
                 name="수익률 (%)"
                 strokeWidth={2}
-                dot={{ fill: (data) => data.isPositive ? '#10B981' : '#EF4444' }}
               />
             </LineChart>
           </div>

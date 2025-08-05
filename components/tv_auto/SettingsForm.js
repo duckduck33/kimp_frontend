@@ -239,53 +239,6 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
     }
   };
 
-  const handleClosePosition = async () => {
-    if (serverStatus !== 'connected') {
-      alert('백엔드 서버에 연결되지 않았습니다.');
-      return;
-    }
-
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/close-position`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      if (response.ok) {
-        alert('포지션이 청산되었습니다.');
-        // 포지션 청산 후 자동매매 상태 업데이트
-        setIsRunning(false);
-        localStorage.setItem('tvAutoStatus', JSON.stringify(false));
-        
-        // 백엔드에 자동매매 비활성화 상태 전송
-        const updateResponse = await fetch(`${BACKEND_URL}/api/update-settings`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ...settings,
-            investment: parseFloat(settings.investment),
-            leverage: parseInt(settings.leverage),
-            takeProfit: parseFloat(settings.takeProfit),
-            stopLoss: parseFloat(settings.stopLoss),
-            isAutoTradingEnabled: false
-          })
-        });
-        
-        if (updateResponse.ok) {
-          console.log('자동매매 상태가 비활성화되었습니다.');
-        } else {
-          console.error('자동매매 상태 업데이트 실패');
-        }
-      } else {
-        const errorData = await response.json();
-        alert(`포지션 청산 실패: ${errorData.detail || '알 수 없는 오류'}`);
-      }
-    } catch (error) {
-      console.error('포지션 청산 중 오류:', error);
-      alert('포지션 청산 중 오류가 발생했습니다.');
-    }
-  };
-
   const handleEmergencyClose = async () => {
     if (serverStatus !== 'connected') {
       alert('백엔드 서버에 연결되지 않았습니다.');
@@ -293,9 +246,29 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
     }
 
     try {
+      // 먼저 수익률 API로 현재 포지션 정보 확인
+      const profitResponse = await fetch(`${BACKEND_URL}/api/profit/XRP-USDT`);
+      
+      if (!profitResponse.ok) {
+        alert('포지션 정보를 가져올 수 없습니다.');
+        return;
+      }
+      
+      const profitData = await profitResponse.json();
+      
+      if (!profitData || profitData.length === 0) {
+        alert('활성 포지션이 없습니다.');
+        return;
+      }
+      
+      // 포지션 정보에서 심볼 추출
+      const symbol = profitData[0].symbol || 'XRP-USDT';
+      
+      // 포지션 종료 API 호출
       const response = await fetch(`${BACKEND_URL}/api/close-position`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol: symbol })
       });
 
       if (response.ok) {
@@ -399,13 +372,6 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
             disabled={serverStatus !== 'connected'}
           >
             {isRunning ? '자동매매 중지' : '자동매매 시작'}
-          </Button>
-          <Button
-            onClick={handleClosePosition}
-            variant="danger"
-            disabled={serverStatus !== 'connected'}
-          >
-            포지션 청산
           </Button>
           <Button
             onClick={handleEmergencyClose}
