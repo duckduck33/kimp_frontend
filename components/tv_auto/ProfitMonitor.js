@@ -556,7 +556,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
             <div>
               <p className="text-gray-400">미실현 손익</p>
               <p className={`text-xl font-semibold ${profitData.unrealized_profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {profitData.unrealized_profit.toFixed(2)} VST
+                {profitData.unrealized_profit.toFixed(2)} USDT
               </p>
             </div>
           </div>
@@ -592,11 +592,11 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
               <Line 
                 type="monotone" 
                 dataKey="profit" 
-                stroke={(data) => data.isPositive ? '#10B981' : '#EF4444'}
+                stroke="#10B981"
                 name="수익률 (%)"
                 strokeWidth={6}
-                dot={{ r: 4, fill: (data) => data.isPositive ? '#10B981' : '#EF4444', stroke: '#fff', strokeWidth: 2 }}
-                activeDot={{ r: 6, strokeWidth: 3, stroke: '#fff', fill: (data) => data.isPositive ? '#10B981' : '#EF4444' }}
+                dot={{ r: 4, fill: '#10B981', stroke: '#fff', strokeWidth: 2 }}
+                activeDot={{ r: 6, strokeWidth: 3, stroke: '#fff', fill: '#10B981' }}
                 connectNulls={true}
               />
             </LineChart>
@@ -639,7 +639,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
                 <div>
                   <p className="text-gray-400">실현 손익</p>
                   <p className={`text-xl font-semibold ${closedPositionInfo.realized_profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {closedPositionInfo.realized_profit?.toFixed(2) || '0.00'} VST
+                    {closedPositionInfo.realized_profit?.toFixed(2) || '0.00'} USDT
                   </p>
                 </div>
               </div>
@@ -669,7 +669,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
                           </div>
                           {dayData.profit && (
                             <div className={`text-xs font-bold mt-1 ${dayData.isToday ? 'text-yellow-300' : 'text-green-400'}`}>
-                              +{dayData.profit.toLocaleString()} VST
+                              +{dayData.profit.toLocaleString()} USDT
                             </div>
                           )}
                         </div>

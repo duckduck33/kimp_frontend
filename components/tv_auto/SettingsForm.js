@@ -373,9 +373,10 @@ export default function SettingsForm({ onSettingsChange }) {
         />
         <Input
           type="number"
-          label="투자금액 (VST)"
+          label="투자금액 (USDT)"
           value={settings.investment}
-          onChange={(value) => setSettings({ ...settings, investment: value })}
+          onChange={(value) => setSettings({...settings, investment: Number(value)})}
+          placeholder="1000"
         />
         <Input
           type="number"
