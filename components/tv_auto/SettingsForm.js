@@ -51,8 +51,8 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
 
   const checkServerStatus = async () => {
     try {
-      console.log('서버 상태 확인 중:', `${BACKEND_URL}/`);
-      const response = await fetch(`${BACKEND_URL}/`);
+      console.log('서버 상태 확인 중:', `${BACKEND_URL}/api/settings`);
+      const response = await fetch(`${BACKEND_URL}/api/settings`);
       console.log('서버 응답:', response.status, response.statusText);
       if (response.ok) {
         setServerStatus('connected');
@@ -254,6 +254,9 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
           </p>
           <p className="text-xs text-gray-500 mt-1">
             웹훅 URL: {BACKEND_URL}/api/webhook
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            (BACKEND_URL: {BACKEND_URL})
           </p>
         </div>
       </div>
