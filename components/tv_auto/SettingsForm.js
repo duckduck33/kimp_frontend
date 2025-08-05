@@ -51,7 +51,9 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
 
   const checkServerStatus = async () => {
     try {
+      console.log('서버 상태 확인 중:', `${BACKEND_URL}/`);
       const response = await fetch(`${BACKEND_URL}/`);
+      console.log('서버 응답:', response.status, response.statusText);
       if (response.ok) {
         setServerStatus('connected');
       } else {
@@ -65,9 +67,12 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
 
   const loadSettingsFromBackend = async () => {
     try {
+      console.log('설정 불러오기 중:', `${BACKEND_URL}/api/settings`);
       const response = await fetch(`${BACKEND_URL}/api/settings`);
+      console.log('설정 응답:', response.status, response.statusText);
       if (response.ok) {
         const data = await response.json();
+        console.log('설정 데이터:', data);
         if (data.success && data.data) {
           const backendSettings = data.data;
           setSettings({
@@ -94,24 +99,33 @@ export default function SettingsForm({ onPositionClose, onPositionEnter }) {
       // 로컬 스토리지에 저장
       localStorage.setItem('tvAutoSettings', JSON.stringify(settings));
       
+      const requestBody = {
+        ...settings,
+        investment: parseFloat(settings.investment),
+        leverage: parseInt(settings.leverage),
+        takeProfit: parseFloat(settings.takeProfit),
+        stopLoss: parseFloat(settings.stopLoss),
+        isAutoTradingEnabled: isRunning
+      };
+      
+      console.log('설정 저장 요청:', `${BACKEND_URL}/api/update-settings`, requestBody);
+      
       // 백엔드로 설정 전송
       const response = await fetch(`${BACKEND_URL}/api/update-settings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...settings,
-          investment: parseFloat(settings.investment),
-          leverage: parseInt(settings.leverage),
-          takeProfit: parseFloat(settings.takeProfit),
-          stopLoss: parseFloat(settings.stopLoss),
-          isAutoTradingEnabled: isRunning
-        })
+        body: JSON.stringify(requestBody)
       });
       
+      console.log('설정 저장 응답:', response.status, response.statusText);
+      
       if (response.ok) {
+        const responseData = await response.json();
+        console.log('설정 저장 성공:', responseData);
         alert('설정이 저장되었습니다.');
       } else {
-        console.error('백엔드 설정 저장 실패:', response.status);
+        const errorText = await response.text();
+        console.error('백엔드 설정 저장 실패:', response.status, errorText);
         alert('설정 저장 중 오류가 발생했습니다.');
       }
     } catch (error) {
