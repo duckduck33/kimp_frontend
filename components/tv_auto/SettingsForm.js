@@ -22,8 +22,8 @@ const DEFAULT_SETTINGS = {
   isAutoTradingEnabled: false
 };
 
-// 백엔드 서버 주소 설정
-const BACKEND_URL = 'https://146.56.98.210:80';
+            // 백엔드 서버 주소 설정
+            const BACKEND_URL = 'https://146.56.98.210:443';
 
 export default function SettingsForm({ onPositionClose, onPositionEnter }) {
   const [isRunning, setIsRunning] = useState(false);

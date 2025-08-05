@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
-// 백엔드 서버 주소 설정
-const BACKEND_URL = 'https://146.56.98.210:80';
+            // 백엔드 서버 주소 설정
+            const BACKEND_URL = 'https://146.56.98.210:443';
 
 export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, onPositionEnter, onPositionClose }) {
   const [profitData, setProfitData] = useState(null);
