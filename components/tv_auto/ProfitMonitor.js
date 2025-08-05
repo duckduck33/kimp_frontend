@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card } from '../common/Card';
+import Card from '../common/Card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // 하드코딩된 심볼을 상수로 통합관리
@@ -43,6 +43,7 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
     const currentYear = today.getFullYear();
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const todayDate = today.getDate(); // 오늘 날짜
     
     // localStorage에서 저장된 캘린더 데이터 불러오기
     const savedCalendarData = localStorage.getItem('profitCalendarData');
@@ -61,18 +62,27 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
         } else if (dayCount > daysInMonth) {
           // 이번 달이 끝난 후의 빈 칸
           week.push({ day: '', profit: null });
+        } else if (dayCount > todayDate) {
+          // 오늘 이후의 날짜는 빈 칸으로 표시
+          week.push({ day: dayCount, profit: null, isFuture: true });
+          dayCount++;
         } else {
-          // 이번 달의 날짜
+          // 오늘까지의 날짜만 수익금 생성
           const dateKey = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${dayCount.toString().padStart(2, '0')}`;
-          const isToday = dayCount === today.getDate();
+          const isToday = dayCount === todayDate;
           
           let profit;
           if (existingData[dateKey]) {
             // 저장된 데이터가 있으면 사용
             profit = existingData[dateKey];
           } else {
-            // 새로운 날짜면 랜덤 생성
-            profit = Math.floor(Math.random() * 500) + 100; // 100~600 랜덤 수익금
+            // 새로운 날짜면 랜덤 생성 (4번에 1번 손실)
+            const isLoss = Math.random() < 0.25; // 25% 확률로 손실
+            if (isLoss) {
+              profit = -(Math.floor(Math.random() * 300) + 50); // -50~-350 손실
+            } else {
+              profit = Math.floor(Math.random() * 500) + 100; // 100~600 수익
+            }
             existingData[dateKey] = profit;
           }
           
@@ -346,13 +356,17 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
                 week.map((dayData, dayIndex) => (
                   <div key={`${weekIndex}-${dayIndex}`} className="text-center p-2">
                     {dayData.day ? (
-                      <div className={`relative ${dayData.isToday ? 'bg-blue-600 rounded-lg p-1' : ''}`}>
-                        <div className={`text-sm font-medium ${dayData.isToday ? 'text-white' : 'text-white'}`}>
+                      <div className={`relative ${dayData.isToday ? 'bg-blue-600 rounded-lg p-1' : ''} ${dayData.isFuture ? 'opacity-50' : ''}`}>
+                        <div className={`text-sm font-medium ${dayData.isToday ? 'text-white' : dayData.isFuture ? 'text-gray-500' : 'text-white'}`}>
                           {dayData.day}
                         </div>
                         {dayData.profit && (
-                          <div className={`text-xs font-bold mt-1 ${dayData.isToday ? 'text-yellow-300' : 'text-green-400'}`}>
-                            +{dayData.profit.toLocaleString()} VST
+                          <div className={`text-xs font-bold mt-1 ${
+                            dayData.isToday 
+                              ? (dayData.profit >= 0 ? 'text-yellow-300' : 'text-red-300')
+                              : (dayData.profit >= 0 ? 'text-green-400' : 'text-red-400')
+                          }`}>
+                            {dayData.profit >= 0 ? '+' : ''}{dayData.profit.toLocaleString()} USDT
                           </div>
                         )}
                       </div>
@@ -364,8 +378,12 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
               ))}
             </div>
             <div className="mt-4 text-center">
-              <p className="text-green-400 text-sm">
-                💰 이번 달 총 수익: +{generateCalendarData().flat().filter(day => day.profit).reduce((sum, day) => sum + day.profit, 0).toLocaleString()} VST
+              <p className={`text-sm ${
+                generateCalendarData().flat().filter(day => day.profit).reduce((sum, day) => sum + day.profit, 0) >= 0 
+                  ? 'text-green-400' 
+                  : 'text-red-400'
+              }`}>
+                💰 이번 달 총 수익: {generateCalendarData().flat().filter(day => day.profit).reduce((sum, day) => sum + day.profit, 0).toLocaleString()} USDT
               </p>
             </div>
           </div>
@@ -601,8 +619,12 @@ export default function ProfitMonitor({ closedPositionInfo, hasActivePosition, o
                 ))}
               </div>
               <div className="mt-4 text-center">
-                <p className="text-green-400 text-sm">
-                  💰 이번 달 총 수익: +{generateCalendarData().flat().filter(day => day.profit).reduce((sum, day) => sum + day.profit, 0).toLocaleString()} VST
+                <p className={`text-sm ${
+                  generateCalendarData().flat().filter(day => day.profit).reduce((sum, day) => sum + day.profit, 0) >= 0 
+                    ? 'text-green-400' 
+                    : 'text-red-400'
+                }`}>
+                  💰 이번 달 총 수익: {generateCalendarData().flat().filter(day => day.profit).reduce((sum, day) => sum + day.profit, 0).toLocaleString()} USDT
                 </p>
               </div>
             </div>
