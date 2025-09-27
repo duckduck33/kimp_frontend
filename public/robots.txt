@@ -6,3 +6,19 @@ Sitemap: https://fobit.app/sitemap.xml
 
 # 포비트 암호화폐 자동매매 플랫폼
 # 포비트앱 - 김프 모니터링, RSI 히트맵, 경제캘린더, 자동매매봇
+
+# 추가 크롤링 허용 경로
+Allow: /api/
+Allow: /goldentime
+Allow: /tradingview
+Allow: /tv_auto
+Allow: /calendar
+Allow: /programs
+Allow: /board
+Allow: /notice
+Allow: /heatmap
+Allow: /autobot
+
+# 크롤링 제한 경로
+Disallow: /api/rsi-details/
+Disallow: /api/rsi-heatmap/

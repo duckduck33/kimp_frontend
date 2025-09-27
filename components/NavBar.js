@@ -13,7 +13,6 @@ export default function NavBar() {
   const links = [
     { href: "/", label: "실시간김프" },
     { href: "/goldentime", label: "골든타임 모니터링" },
-    { href: "/tradingview", label: "TOP10지표" },
     { href: "/tv_auto", label: "트레이딩뷰 자동매매" },
     { href: "/calendar", label: "경제캘린더" },
     { href: "/programs", label: "포비트 프로그램" },
