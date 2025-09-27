@@ -8,16 +8,16 @@ export default function RootLayout({ children }) {
     <html lang="ko">
       <head>
         {/* SEO 메타 태그 */}
-        <title>포비트 - 암호화폐 자동매매 및 분석 플랫폼</title>
-        <meta name="description" content="포비트는 암호화폐 자동매매, 김프 모니터링, RSI 히트맵, 경제캘린더 등 종합적인 투자 분석 도구를 제공하는 플랫폼입니다. 포비트앱으로 스마트한 암호화폐 투자를 시작하세요." />
-        <meta name="keywords" content="포비트, 포비트앱, 암호화폐, 자동매매, 김프, RSI, 히트맵, 경제캘린더, 업비트, 바이비트, 트레이딩뷰, 투자, 분석, 봇, 알트코인, 폭등감시" />
+        <title>포비트 | 포비트앱 - 암호화폐 자동매매 및 분석 플랫폼</title>
+        <meta name="description" content="포비트는 암호화폐 자동매매, 김프 모니터링, RSI 히트맵, 경제캘린더 등 종합적인 투자 분석 도구를 제공하는 플랫폼입니다. 포비트와 포비트앱으로 스마트한 암호화폐 투자를 시작하세요." />
+        <meta name="keywords" content="포비트, 포비트앱, 암호화폐, 자동매매, 김프, RSI, 히트맵, 경제캘린더, 업비트, 바이비트, 트레이딩뷰, 투자, 분석, 봇, 알트코인, 폭등감시, 포비트앱, 포비트 플랫폼" />
         <meta name="author" content="포비트" />
         <meta name="robots" content="index, follow" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         
         {/* Open Graph 메타 태그 */}
-        <meta property="og:title" content="포비트 - 암호화폐 자동매매 및 분석 플랫폼" />
-        <meta property="og:description" content="포비트는 암호화폐 자동매매, 김프 모니터링, RSI 히트맵, 경제캘린더 등 종합적인 투자 분석 도구를 제공하는 플랫폼입니다." />
+        <meta property="og:title" content="포비트 | 포비트앱 - 암호화폐 자동매매 및 분석 플랫폼" />
+        <meta property="og:description" content="포비트는 암호화폐 자동매매, 김프 모니터링, RSI 히트맵, 경제캘린더 등 종합적인 투자 분석 도구를 제공하는 플랫폼입니다. 포비트와 포비트앱으로 시작하세요." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://fobit.app" />
         <meta property="og:image" content="https://fobit.app/og-image.png" />
@@ -26,8 +26,8 @@ export default function RootLayout({ children }) {
         
         {/* Twitter 메타 태그 */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="포비트 - 암호화폐 자동매매 및 분석 플랫폼" />
-        <meta name="twitter:description" content="포비트는 암호화폐 자동매매, 김프 모니터링, RSI 히트맵, 경제캘린더 등 종합적인 투자 분석 도구를 제공하는 플랫폼입니다." />
+        <meta name="twitter:title" content="포비트 | 포비트앱 - 암호화폐 자동매매 및 분석 플랫폼" />
+        <meta name="twitter:description" content="포비트는 암호화폐 자동매매, 김프 모니터링, RSI 히트맵, 경제캘린더 등 종합적인 투자 분석 도구를 제공하는 플랫폼입니다. 포비트와 포비트앱으로 시작하세요." />
         <meta name="twitter:image" content="https://fobit.app/og-image.png" />
         
         {/* 추가 SEO 메타 태그 */}

@@ -262,6 +262,17 @@ export default function GoldentimePage() {
       </div>
 
 
+        {/* 페이지 제목 */}
+        <h1 style={{
+        color: ACCENT,
+        fontWeight: '700',
+        fontSize: 24,
+        marginBottom: 20,
+        textAlign: 'center'
+        }}>
+        포비트 | 포비트앱 골든타임 모니터링
+        </h1>
+        
         {/* 업비트 거래대금 10위 코인 목록(상장6개월미만 코인 제외) 제목 */}
         <div style={{
         color: TEXT,
