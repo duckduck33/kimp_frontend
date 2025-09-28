@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import useWebSocket from 'react-use-websocket';
 import NavBar from '../components/NavBar'; // 반드시 맨 위에 import!
+import PasswordModal from '../components/PasswordModal';
 
 // WebSocket 주소
 const WS_URL = "wss://kimp-backend.onrender.com/ws/kimp";
@@ -72,6 +73,10 @@ export default function HomePage() {
   const [coins, setCoins] = useState([]);
   const [exchangeRate, setExchangeRate] = useState(null);
   const [selectedCoin, setSelectedCoin] = useState('BTC'); // 기본 선택
+  
+  // 비밀번호 보호 상태
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   // WebSocket 연결
   const { lastMessage, readyState } = useWebSocket(WS_URL, {
@@ -79,6 +84,14 @@ export default function HomePage() {
     reconnectAttempts: Infinity,
     reconnectInterval: 3000,
   });
+
+  // 인증 상태 확인 (페이지 로드시)
+  useEffect(() => {
+    const authStatus = sessionStorage.getItem('fobit_authenticated');
+    if (authStatus === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   // 데이터 수신 처리
   useEffect(() => {
@@ -94,6 +107,31 @@ export default function HomePage() {
       }
     }
   }, [lastMessage]);
+
+  // 비밀번호 인증 핸들러
+  const handlePasswordSubmit = (success) => {
+    if (success) {
+      setIsAuthenticated(true);
+    }
+  };
+
+  // 코인 클릭 핸들러 (비트코인이 아닌 경우 비밀번호 확인)
+  const handleCoinClick = (coin) => {
+    if (coin === 'BTC' || isAuthenticated) {
+      setSelectedCoin(coin);
+    } else {
+      setShowPasswordModal(true);
+    }
+  };
+
+  // 필터링된 코인 목록 (비트코인만 무료, 나머지는 인증 필요)
+  const getFilteredCoins = () => {
+    if (isAuthenticated) {
+      return coins; // 인증된 경우 모든 코인 표시
+    } else {
+      return coins.filter(coin => coin.coin === 'BTC'); // 비트코인만 표시
+    }
+  };
 
   // // 페이지 상단 패딩을 동적으로 설정
   // useEffect(() => {
@@ -173,10 +211,10 @@ export default function HomePage() {
                   </td>
                 </tr>
               ) : (
-                coins.map((row) => (
+                getFilteredCoins().map((row) => (
                   <tr
                     key={row.coin}
-                    onClick={() => setSelectedCoin(row.coin)}
+                    onClick={() => handleCoinClick(row.coin)}
                     style={{
                       cursor: 'pointer',
                       background: selectedCoin === row.coin ? '#222e41' : undefined,
@@ -219,6 +257,45 @@ export default function HomePage() {
           </table>
         </div>
 
+        {/* 인증되지 않은 경우 안내 메시지 */}
+        {!isAuthenticated && (
+          <div style={{
+            backgroundColor: '#181f2b',
+            borderRadius: 15,
+            padding: 20,
+            margin: '20px auto',
+            maxWidth: 600,
+            border: '2px solid rgba(255, 215, 0, 0.3)',
+            textAlign: 'center'
+          }}>
+            <h3 style={{ color: '#FFD700', marginBottom: 15, fontSize: 18 }}>
+              🔒 프리미엄 코인 정보
+            </h3>
+            <p style={{ color: '#ccc', marginBottom: 20, lineHeight: 1.5 }}>
+              비트코인 외 모든 코인 정보를 보려면 비밀번호가 필요합니다.<br/>
+              우측상단 '포비트 무료신청' 메뉴에서 비밀번호를 받으세요.
+            </p>
+            <button
+              onClick={() => setShowPasswordModal(true)}
+              style={{
+                backgroundColor: '#FFD700',
+                color: '#000',
+                border: 'none',
+                borderRadius: 8,
+                padding: '12px 24px',
+                fontSize: 16,
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'opacity 0.3s ease'
+              }}
+              onMouseEnter={(e) => e.target.style.opacity = '0.8'}
+              onMouseLeave={(e) => e.target.style.opacity = '1'}
+            >
+              비밀번호 입력하기
+            </button>
+          </div>
+        )}
+
         {/* WebSocket 연결 상태 */}
         <div style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#888' }}>
           <p>
@@ -228,6 +305,12 @@ export default function HomePage() {
           <p>WS_URL: {WS_URL}</p>
         </div>
 
+        {/* 비밀번호 모달 */}
+        <PasswordModal
+          isOpen={showPasswordModal}
+          onClose={() => setShowPasswordModal(false)}
+          onPasswordSubmit={handlePasswordSubmit}
+        />
 
       </main>
     </>

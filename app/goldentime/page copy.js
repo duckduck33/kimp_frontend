@@ -2,7 +2,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import NavBar from '../../components/NavBar';
 import Chart from 'chart.js/auto';
-import PasswordModal from '../../components/PasswordModal';
 
 const API_URL = 'https://script.google.com/macros/s/AKfycby60rsO3sCHiRPv6mqMUQa-u2T0nPGTEles189caRS5KfR8ktZMOlmsBpPo9dNw8CrsiA/exec';
 
@@ -21,10 +20,6 @@ export default function GoldentimePage() {
   const [coins, setCoins] = useState([]);
   const [selectedCoin, setSelectedCoin] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState(6);
-  
-  // 비밀번호 보호 상태
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   const [timeVolatility, setTimeVolatility] = useState([]);
   const [timeUpCloseRates, setTimeUpCloseRates] = useState([]);
@@ -36,14 +31,6 @@ export default function GoldentimePage() {
 
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
-
-  // 인증 상태 확인 (페이지 로드시)
-  useEffect(() => {
-    const authStatus = sessionStorage.getItem('fobit_authenticated');
-    if (authStatus === 'true') {
-      setIsAuthenticated(true);
-    }
-  }, []);
 
   // 초기 코인 리스트 불러오기 및 상장 1년 미만 제외
   useEffect(() => {
@@ -236,31 +223,6 @@ export default function GoldentimePage() {
 
   const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
 
-  // 비밀번호 인증 핸들러
-  const handlePasswordSubmit = (success) => {
-    if (success) {
-      setIsAuthenticated(true);
-    }
-  };
-
-  // 코인 클릭 핸들러 (비트코인이 아닌 경우 비밀번호 확인)
-  const handleCoinClick = (coin) => {
-    if (coin === 'BTC' || isAuthenticated) {
-      setSelectedCoin(coin);
-    } else {
-      setShowPasswordModal(true);
-    }
-  };
-
-  // 필터링된 코인 목록 (비트코인만 무료, 나머지는 인증 필요)
-  const getFilteredCoins = () => {
-    if (isAuthenticated) {
-      return coins; // 인증된 경우 모든 코인 표시
-    } else {
-      return coins.filter(coin => coin.includes('BTC')); // 비트코인만 표시
-    }
-  };
-
   // // 페이지 상단 패딩을 동적으로 설정=> NaBar.js에서 통합관리
   // useEffect(() => {
   //   const mainElement = document.querySelector('main');
@@ -279,10 +241,10 @@ export default function GoldentimePage() {
 
       {/* 코인 선택 버튼 */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 20 }}>
-        {getFilteredCoins().map(coin => (
+        {coins.map(coin => (
           <button
             key={coin}
-            onClick={() => handleCoinClick(coin)}
+            onClick={() => setSelectedCoin(coin)}
             style={{
               padding: '6px 18px',
               borderRadius: 20,
@@ -443,52 +405,6 @@ export default function GoldentimePage() {
           })() : <p style={{ color: '#999' }}>요일별 변동률 데이터를 불러오는 중입니다...</p>
         )}
       </section>
-
-      {/* 인증되지 않은 경우 안내 메시지 */}
-      {!isAuthenticated && (
-        <div style={{
-          backgroundColor: CARD_BG,
-          borderRadius: 15,
-          padding: 20,
-          margin: '20px auto',
-          maxWidth: 600,
-          border: '2px solid rgba(255, 215, 0, 0.3)',
-          textAlign: 'center'
-        }}>
-          <h3 style={{ color: ACCENT, marginBottom: 15, fontSize: 18 }}>
-            🔒 프리미엄 골든타임 분석
-          </h3>
-          <p style={{ color: TEXT, marginBottom: 20, lineHeight: 1.5 }}>
-            비트코인 외 모든 코인의 골든타임 분석을 보려면 비밀번호가 필요합니다.<br/>
-            우측상단 '포비트 무료신청' 메뉴에서 비밀번호를 받으세요.
-          </p>
-          <button
-            onClick={() => setShowPasswordModal(true)}
-            style={{
-              backgroundColor: ACCENT,
-              color: '#000',
-              border: 'none',
-              borderRadius: 8,
-              padding: '12px 24px',
-              fontSize: 16,
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              transition: 'opacity 0.3s ease'
-            }}
-            onMouseEnter={(e) => e.target.style.opacity = '0.8'}
-            onMouseLeave={(e) => e.target.style.opacity = '1'}
-          >
-            비밀번호 입력하기
-          </button>
-        </div>
-      )}
-
-      {/* 비밀번호 모달 */}
-      <PasswordModal
-        isOpen={showPasswordModal}
-        onClose={() => setShowPasswordModal(false)}
-        onPasswordSubmit={handlePasswordSubmit}
-      />
     </main>
   );
 }
