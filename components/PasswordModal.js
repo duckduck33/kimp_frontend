@@ -12,7 +12,7 @@ export default function PasswordModal({ isOpen, onClose, onPasswordSubmit }) {
   const [error, setError] = useState('');
 
   // 비밀번호 (실제 운영시에는 환경변수나 서버에서 관리)
-  const CORRECT_PASSWORD = 'fobit2024';
+  const CORRECT_PASSWORD = 'FOBIT';
 
   const handleSubmit = (e) => {
     e.preventDefault();
