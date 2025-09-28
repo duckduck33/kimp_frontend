@@ -10,6 +10,7 @@ const TEXT = '#fff';
 export default function PasswordModal({ isOpen, onClose, onPasswordSubmit }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // 비밀번호 (실제 운영시에는 환경변수나 서버에서 관리)
   const CORRECT_PASSWORD = 'FOBIT';
@@ -18,7 +19,8 @@ export default function PasswordModal({ isOpen, onClose, onPasswordSubmit }) {
     e.preventDefault();
     setError('');
     
-    if (password === CORRECT_PASSWORD) {
+    // 대소문자 구분 없이 비교
+    if (password.toUpperCase() === CORRECT_PASSWORD) {
       // 세션 스토리지에 인증 상태 저장
       sessionStorage.setItem('fobit_authenticated', 'true');
       onPasswordSubmit(true);
@@ -31,6 +33,7 @@ export default function PasswordModal({ isOpen, onClose, onPasswordSubmit }) {
   const handleClose = () => {
     setPassword('');
     setError('');
+    setShowPassword(false);
     onClose();
   };
 
@@ -84,15 +87,15 @@ export default function PasswordModal({ isOpen, onClose, onPasswordSubmit }) {
 
         {/* 비밀번호 입력 폼 */}
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 20 }}>
+          <div style={{ marginBottom: 20, position: 'relative' }}>
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="비밀번호를 입력하세요"
               style={{
                 width: '100%',
-                padding: '15px 20px',
+                padding: '15px 50px 15px 20px',
                 fontSize: 16,
                 backgroundColor: BG,
                 border: '2px solid #555',
@@ -105,6 +108,29 @@ export default function PasswordModal({ isOpen, onClose, onPasswordSubmit }) {
               onBlur={(e) => e.target.style.borderColor = '#555'}
               autoFocus
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute',
+                right: 15,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                color: '#ccc',
+                cursor: 'pointer',
+                fontSize: 18,
+                padding: 5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onMouseEnter={(e) => e.target.style.color = ACCENT}
+              onMouseLeave={(e) => e.target.style.color = '#ccc'}
+            >
+              {showPassword ? '🙈' : '👁️'}
+            </button>
           </div>
 
           {/* 에러 메시지 */}
