@@ -43,7 +43,7 @@ export default function NavBar() {
   const handleApplyBtnClick = () => {
     // 랜덤 링크선택
     const links = [
-      "https://zamtown.com/fobitapp"
+      "https://forms.gle/xV5mjNdu7G3wtbJt7"
     ];
     const randomLink = links[Math.floor(Math.random() * links.length)];
     
